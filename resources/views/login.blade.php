@@ -47,11 +47,36 @@
                 <br>
                 <input type="file" id="foto" name="foto" accept="image/*" capture="environment" hidden>
                 <label for="foto" class="btn-foto">Tomar foto</label>
+                <div id="foto-preview-wrap" style="display:none; margin-top:10px; text-align:center;">
+                    <img id="foto-preview" src="" alt="Vista previa" style="max-width:180px; max-height:180px; border-radius:10px; border:2px solid #ccc; object-fit:cover;">
+                    <p id="foto-nombre" style="font-size:0.8em; color:#555; margin-top:4px;"></p>
+                </div>
             </div>
             <div class="login-boton">
                 <button type="submit" class="submit-boton">SIGUIENTE 🤙</button>
             </div>
         </form>
     </div>
+    <script>
+        document.getElementById('foto').addEventListener('change', function () {
+            const file = this.files[0];
+            const wrap = document.getElementById('foto-preview-wrap');
+            const preview = document.getElementById('foto-preview');
+            const nombre = document.getElementById('foto-nombre');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    nombre.textContent = file.name;
+                    wrap.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                wrap.style.display = 'none';
+                preview.src = '';
+                nombre.textContent = '';
+            }
+        });
+    </script>
 </body>
 </html>
