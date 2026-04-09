@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga</title>
+    <link rel="stylesheet" href="{{ asset('style.css') }}">
+</head>
+<body class="carga-body">
+    <div class="animacion">
+        <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.5/dist/dotlottie-wc.js" type="module"></script>
+        <dotlottie-wc 
+            src="https://lottie.host/44d33be4-a9d9-4e62-81bc-429b91ecd490/2rnw9tISHc.lottie" 
+            style="width: 80px;height: 80px;align-items: center; margin: auto; margin-top: 18%;" autoplay loop>
+        </dotlottie-wc>
+        <h3 class="subtitulo-carga">Cargando...</h3>
+    </div>
+</body>
+</html>
