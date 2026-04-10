@@ -16,23 +16,9 @@
             gap: 20px;
         }
         .titulo-carga { font-size: 1.3rem; font-weight: bold; color: #fff; text-align: center; }
-        .btn-opciones { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-        .btn-opcion {
-            padding: 14px 28px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            background: #0b3a6d;
-            color: #fff;
-            transition: background 0.2s;
-        }
-        .btn-opcion:hover { background: #2a8fd8; }
-        .btn-opcion.activo { background: #2a8fd8; }
 
         /* --- Cámara --- */
-        #seccion-camara { display: none; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 400px; }
+        #paso-camara { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 400px; }
         .camera-container {
             position: relative;
             width: 100%;
@@ -64,33 +50,51 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
+            width: 100%;
+            max-width: 360px;
         }
         #btn-capturar:hover { background: #c0392b; }
 
-        /* --- Subir imagen --- */
-        #seccion-upload { display: none; flex-direction: column; align-items: center; gap: 12px; width: 100%; max-width: 400px; }
-        .zona-upload {
-            width: 100%;
-            border: 2px dashed #2a8fd8;
-            border-radius: 12px;
-            padding: 32px 16px;
-            text-align: center;
-            cursor: pointer;
-            color: #2a8fd8;
-            font-size: 0.95rem;
-        }
-        .zona-upload:hover { background: #eaf4fb; }
-
-        /* --- Preview --- */
-        #seccion-preview { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; max-width: 400px; }
+        /* --- Formulario con preview --- */
+        #paso-formulario { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; max-width: 400px; }
         #img-preview {
             width: 100%;
-            max-height: 340px;
+            max-height: 280px;
             object-fit: contain;
             border-radius: 12px;
             border: 2px solid #ccc;
         }
-        #btn-procesar {
+        #btn-reintentar {
+            background: none;
+            border: none;
+            color: #2a8fd8;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+        }
+        .form-datos {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .form-datos label {
+            font-size: 0.85rem;
+            color: #cde;
+            margin-bottom: 2px;
+            display: block;
+        }
+        .form-datos input[type="text"],
+        .form-datos input[type="email"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #2a8fd8;
+            font-size: 1rem;
+            background: #fff;
+            box-sizing: border-box;
+        }
+        #btn-guardar {
             padding: 14px 36px;
             background: #27ae60;
             color: #fff;
@@ -100,31 +104,17 @@
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            max-width: 360px;
         }
-        #btn-procesar:hover { background: #219150; }
-        #btn-reintentar {
-            background: none;
-            border: none;
-            color: #2a8fd8;
-            cursor: pointer;
-            font-size: 0.9rem;
-            text-decoration: underline;
-        }
+        #btn-guardar:hover { background: #219150; }
         #canvas { display: none; }
     </style>
 </head>
 <body class="carga-body">
     <div class="carga-wrap">
-        <p class="titulo-carga">¿Cómo querés agregar tu foto?</p>
 
-        <div class="btn-opciones">
-            <button class="btn-opcion" id="btn-ir-camara">📷 Tomar foto</button>
-            <button class="btn-opcion" id="btn-ir-upload">🖼️ Subir imagen</button>
-        </div>
-
-        {{-- Sección cámara --}}
-        <div id="seccion-camara">
+        {{-- Paso 1: Cámara --}}
+        <div id="paso-camara">
+            <p class="titulo-carga">Tomá una foto de tu mano</p>
             <div class="camera-container">
                 <video id="video" autoplay playsinline muted></video>
                 <img id="overlay-mano" src="{{ asset('mano.png') }}" alt="">
@@ -132,134 +122,107 @@
             <button id="btn-capturar">⚪ Capturar</button>
         </div>
 
-        {{-- Sección subir imagen --}}
-        <div id="seccion-upload">
-            <div class="zona-upload" onclick="document.getElementById('input-archivo').click()">
-                <p>Tocá acá para elegir una imagen</p>
-                <p style="font-size:0.8em; color:#999; margin-top:4px;">JPG, PNG, WEBP — máx. 10MB</p>
-            </div>
-            <input type="file" id="input-archivo" accept="image/*" hidden>
-        </div>
-
-        {{-- Preview + procesar --}}
-        <div id="seccion-preview">
+        {{-- Paso 2: Preview + Formulario --}}
+        <div id="paso-formulario">
+            <p class="titulo-carga">¡Listo! Completá tus datos</p>
             <img id="img-preview" src="" alt="Vista previa">
-            <button id="btn-reintentar">← Volver a intentar</button>
-        </div>
+            <button id="btn-reintentar" type="button">← Volver a tomar</button>
 
-        {{-- Formulario oculto para envío --}}
-        <form id="form-procesar" method="POST" action="{{ route('carga.store') }}" enctype="multipart/form-data" style="width:100%;max-width:360px;display:none;">
-            @csrf
-            <input type="hidden" id="input-tipo" name="tipo" value="">
-            {{-- Para cámara: base64 --}}
-            <input type="hidden" id="input-imagen-b64" name="imagen" value="">
-            {{-- Para upload: file --}}
-            <input type="file" id="input-imagen-file" name="imagen" accept="image/*" style="display:none;">
-            <button type="submit" id="btn-procesar">✅ Procesar</button>
-        </form>
+            <form id="form-datos" class="form-datos" method="POST" action="{{ route('carga.store') }}">
+                @csrf
+                <input type="hidden" name="tipo" value="camara">
+                <input type="hidden" id="input-imagen-b64" name="imagen" value="">
+
+                @if ($errors->any())
+                    <div style="background:#fdd;border-radius:8px;padding:10px;color:#900;">
+                        <ul style="margin:0;padding-left:16px;">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div>
+                    <label for="nombre">Nombre y Apellido*</label>
+                    <input type="text" id="nombre" name="nombre" value="{{ old('nombre') }}" required>
+                </div>
+                <div>
+                    <label for="cedula">Número de Cédula*</label>
+                    <input type="text" id="cedula" name="cedula" value="{{ old('cedula') }}" required>
+                </div>
+                <div>
+                    <label for="celular">Celular*</label>
+                    <input type="text" id="celular" name="celular" value="{{ old('celular') }}" required>
+                </div>
+                <div>
+                    <label for="email">Correo Electrónico*</label>
+                    <input type="email" id="email" name="email" value="{{ old('email') }}" required>
+                </div>
+
+                <button type="submit" id="btn-guardar">✅ Guardar</button>
+            </form>
+        </div>
 
         <canvas id="canvas"></canvas>
     </div>
 
     <script>
-        // --- Estado ---
-        let modo = null; // 'camara' | 'upload'
-        let stream = null;
-        let imagenBlob = null; // para upload
+        const pasoCamara     = document.getElementById('paso-camara');
+        const pasoFormulario = document.getElementById('paso-formulario');
+        const video          = document.getElementById('video');
+        const canvas         = document.getElementById('canvas');
+        const imgPreview     = document.getElementById('img-preview');
+        const inputB64       = document.getElementById('input-imagen-b64');
+        let stream           = null;
 
-        const secCamara    = document.getElementById('seccion-camara');
-        const secUpload    = document.getElementById('seccion-upload');
-        const secPreview   = document.getElementById('seccion-preview');
-        const formProcesar = document.getElementById('form-procesar');
-        const video        = document.getElementById('video');
-        const canvas       = document.getElementById('canvas');
-        const imgPreview   = document.getElementById('img-preview');
-        const inputTipo    = document.getElementById('input-tipo');
-        const inputB64     = document.getElementById('input-imagen-b64');
-        const inputFile    = document.getElementById('input-imagen-file');
-        const btnIrCamara  = document.getElementById('btn-ir-camara');
-        const btnIrUpload  = document.getElementById('btn-ir-upload');
-
-        function resetSecciones() {
-            secCamara.style.display    = 'none';
-            secUpload.style.display    = 'none';
-            secPreview.style.display   = 'none';
-            formProcesar.style.display = 'none';
-            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-            btnIrCamara.classList.remove('activo');
-            btnIrUpload.classList.remove('activo');
-        }
-
-        // --- Cámara ---
-        btnIrCamara.addEventListener('click', async () => {
-            resetSecciones();
-            modo = 'camara';
-            btnIrCamara.classList.add('activo');
-            secCamara.style.display = 'flex';
+        // Auto-arrancar cámara al cargar
+        async function iniciarCamara() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
                 video.srcObject = stream;
             } catch (e) {
                 alert('No se pudo acceder a la cámara: ' + e.message);
             }
-        });
+        }
+        iniciarCamara();
 
+        // Capturar foto
         document.getElementById('btn-capturar').addEventListener('click', () => {
             canvas.width  = video.videoWidth;
             canvas.height = video.videoHeight;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
+            canvas.getContext('2d').drawImage(video, 0, 0);
             const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-            mostrarPreview(dataUrl);
+
+            // Detener cámara
             if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-            inputTipo.value  = 'camara';
+
+            // Mostrar preview y formulario
+            imgPreview.src   = dataUrl;
             inputB64.value   = dataUrl;
+            pasoCamara.style.display     = 'none';
+            pasoFormulario.style.display = 'flex';
         });
 
-        // --- Upload ---
-        btnIrUpload.addEventListener('click', () => {
-            resetSecciones();
-            modo = 'upload';
-            btnIrUpload.classList.add('activo');
-            secUpload.style.display = 'flex';
-        });
-
-        document.getElementById('input-archivo').addEventListener('change', function () {
-            const file = this.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                mostrarPreview(e.target.result);
-                // Pasamos el archivo al input oculto del form
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                inputFile.files = dt.files;
-                inputB64.value  = ''; // no usar base64
-                inputTipo.value = 'upload';
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // --- Preview ---
-        function mostrarPreview(src) {
-            imgPreview.src = src;
-            secCamara.style.display    = 'none';
-            secUpload.style.display    = 'none';
-            secPreview.style.display   = 'flex';
-            formProcesar.style.display = 'block';
-        }
-
+        // Volver a tomar
         document.getElementById('btn-reintentar').addEventListener('click', () => {
-            resetSecciones();
+            pasoFormulario.style.display = 'none';
+            pasoCamara.style.display     = 'flex';
+            imgPreview.src  = '';
+            inputB64.value  = '';
+            iniciarCamara();
         });
 
-        // --- Envío: si es upload, sincronizar el file al form ---
-        formProcesar.addEventListener('submit', function (e) {
-            if (inputTipo.value === 'upload' && inputFile.files.length === 0) {
-                e.preventDefault();
-                alert('No se encontró la imagen.');
-            }
-        });
+        @if ($errors->any())
+        // Si hay errores de validación, restaurar la imagen capturada previamente
+        const imgGuardada = '{{ old('imagen') }}';
+        if (imgGuardada) {
+            imgPreview.src  = imgGuardada;
+            inputB64.value  = imgGuardada;
+            pasoCamara.style.display     = 'none';
+            pasoFormulario.style.display = 'flex';
+        }
+        @endif
     </script>
 </body>
 </html>

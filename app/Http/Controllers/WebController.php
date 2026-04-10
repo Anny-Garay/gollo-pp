@@ -61,35 +61,36 @@ class WebController extends Controller
     public function storeImagen(Request $request)
     {
         $request->validate([
-            'imagen' => 'required',
-            'tipo'   => 'required|in:camara,upload',
+            'nombre'  => 'required|string|max:255',
+            'cedula'  => 'required|string|max:50',
+            'celular' => 'required|string|max:30',
+            'email'   => 'required|email|max:255',
+            'imagen'  => 'required|string',
+            'tipo'    => 'required|in:camara',
         ]);
 
-        $participanteId = session('participante_id');
-        abort_unless($participanteId, 403, 'Sesión no válida.');
+        // Guardar participante
+        $participante = Participante::updateOrCreate(
+            ['cedula' => $request->cedula],
+            [
+                'nombre'  => $request->nombre,
+                'celular' => $request->celular,
+                'email'   => $request->email,
+            ]
+        );
 
-        $tipo = $request->tipo;
-
-        // Base64 (captura de cámara)
-        if ($tipo === 'camara') {
-            $data = $request->imagen;
-            // quitar prefijo data:image/...;base64,
-            $data = preg_replace('/^data:image\/[a-z]+;base64,/', '', $data);
-            $decoded = base64_decode($data);
-            abort_if($decoded === false, 422, 'Imagen inválida.');
-            $filename = 'imagenes/' . uniqid('cam_', true) . '.jpg';
-            \Storage::disk('public')->put($filename, $decoded);
-            $ruta = $filename;
-        } else {
-            // Upload normal
-            $request->validate(['imagen' => 'file|image|max:10240']);
-            $ruta = $request->file('imagen')->store('imagenes', 'public');
-        }
+        // Guardar imagen base64
+        $data = $request->imagen;
+        $data = preg_replace('/^data:image\/[a-z]+;base64,/', '', $data);
+        $decoded = base64_decode($data);
+        abort_if($decoded === false, 422, 'Imagen inválida.');
+        $filename = 'imagenes/' . uniqid('cam_', true) . '.jpg';
+        \Storage::disk('public')->put($filename, $decoded);
 
         Imagen::create([
-            'participante_id' => $participanteId,
-            'ruta'            => $ruta,
-            'tipo'            => $tipo,
+            'participante_id' => $participante->id,
+            'ruta'            => $filename,
+            'tipo'            => 'camara',
         ]);
 
         return redirect()->route('resultado');

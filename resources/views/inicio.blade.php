@@ -28,7 +28,7 @@
                     cuánto ganás!
                 </p>
             </div>
-            <a href="{{ route('login') }}" class="boton-inicio">¡Darle viaje! 🤙</a>
+            <a href="{{ route('carga') }}" class="boton-inicio">¡Darle viaje! 🤙</a>
             <p class="info-inicio">No guardamos fotos. Solo medimos el ángulo. 🔒</p>
         </div>
     </div>  
