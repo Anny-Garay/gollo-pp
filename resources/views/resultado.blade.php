@@ -14,6 +14,16 @@
         <h1>¡Felicidades!</h1>
         <p>Ganaste un 15%<br>de descuento
         </p>
+        @if (!is_null($humana_score) || !is_null($angulo_menique))
+        <div class="analisis-ia" style="margin-top:18px; font-size:0.95rem; opacity:0.85;">
+            @if (!is_null($humana_score))
+                <p>🤚 Mano humana: <strong>{{ $humana_score }}/100</strong></p>
+            @endif
+            @if (!is_null($angulo_menique))
+                <p>🤙 Ángulo del meñique: <strong>{{ $angulo_menique }}°</strong></p>
+            @endif
+        </div>
+        @endif
     </div>
 </body>
 </html>

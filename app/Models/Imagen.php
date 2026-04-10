@@ -10,6 +10,8 @@ class Imagen extends Model
         'participante_id',
         'ruta',
         'tipo',
+        'humana_score',
+        'angulo_menique',
     ];
 
     public function participante()

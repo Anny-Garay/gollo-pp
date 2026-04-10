@@ -9,6 +9,7 @@ Route::get('/login', [WebController::class, 'login'])->name('login');
 Route::post('/login', [WebController::class, 'storeParticipante'])->name('login.store');
 Route::get('/carga', [WebController::class, 'carga'])->name('carga');
 Route::post('/carga', [WebController::class, 'storeImagen'])->name('carga.store');
+Route::post('/analizar', [WebController::class, 'analizarImagen'])->name('analizar');
 Route::get('/resultado', [WebController::class, 'resultado'])->name('resultado');
 
 // Admin
