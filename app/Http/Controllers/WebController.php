@@ -133,7 +133,7 @@ Analiza esta imagen y responde ÚNICAMENTE con un objeto JSON válido, sin expli
 El JSON debe tener exactamente estos dos campos:
 {
   "humana_score": <entero del 0 al 100 indicando qué tan probable es que sea una mano humana real>,
-  "angulo_menique": <número decimal con el ángulo de inclinación del dedo meñique en grados respecto a la vertical, o null si no se puede medir>
+  "angulo_menique": <número decimal con el ángulo de inclinación del dedo meñique en grados respecto a la vertical, o 0 si no se puede medir. Trata de medirlo aunque el meñique esté parcialmente oculto, y si no se ve para nada, pon 0.>
 }
 EOT;
 

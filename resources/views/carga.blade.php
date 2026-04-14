@@ -164,8 +164,8 @@
                 </div>
 
                 <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px; width:100%">
-                    <button class="btn-principal" id="btn-continuar">📤 Subir foto y cargar datos</button>
-                    <button class="btn-volver" id="btn-reintentar-analisis">← Volver a tomar</button>
+                    <button class="btn-principal" id="btn-continuar" style="display:none">📤 Subir foto y cargar datos</button>
+                    <button class="btn-principal" id="btn-reintentar-analisis">← Volver a tomar</button>
                 </div>
             </div>
         </div>
