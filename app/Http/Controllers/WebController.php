@@ -247,8 +247,8 @@ EOT;
         );
 
         $imagenRuta    = session('imagen_ruta');
-        $humanaScore   = session('humana_score');
-        $anguloMenique = session('angulo_menique');
+        $humanaScore   = $request->input('humana_score')   ?? session('humana_score');
+        $anguloMenique = $request->input('angulo_menique') ?? session('angulo_menique');
 
         if ($imagenRuta) {
             Imagen::create([
