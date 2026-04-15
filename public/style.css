@@ -1,84 +1,151 @@
-.inicio-body{
+/*==============================================================================Inicio*/
+.inicio-body {
     min-height: 100vh;
-    min-height: 98dvh; /* mejor para mobile */
-    /*background: linear-gradient(180deg, #2a8fd8 0%, #0b3a6d 100%);*/
-    background-image: url('img/Recurso1.png');
-    display: flex;
-    text-align: center; /* centra el texto */
+    min-height: 100dvh;
+    background-image: url('img/Recurso5.png');
+    background-size: cover;
+    background-position: center top;
     font-family: Arial, Helvetica, sans-serif;
-}
-@media (min-width: 768px) {
-
-  .inicio-body {
-    align-items: stretch; /* importante */
-  }
-
-  .contenedor {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  .columna-imagen {
-    position: relative;
-    flex: 0 0 60%;
-  }
-
-  .columna-texto {
-    flex: 0 0 35%;
-  }
-
-  .img-inicio {
-    position: relative;
-    width: 150%;
-    right: 360px;
-    /*max-width: 750px;
-    margin: 0 0 0 -125px;*/
-  }
+    justify-content: center;
+    align-items: flex-start;
 }
-.texto-inicio{
-    color:  #ffffff;
+.inicio-wrapper {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 24px 16px;
+    box-sizing: border-box;
+}
+.inicio-logo {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
     margin-bottom: 20px;
 }
-.texto-inicio h1{
+.logo-img {
+    height: 44px;
+    width: auto;
+}
+.inicio-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+.thumb-emoji {
+    font-size: 84px;
+    line-height: 1;
+    margin-bottom: 14px;
+}
+.pinky-badge {
+    border: 1.5px solid rgba(255, 255, 255, 0.65);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    padding: 6px 22px;
+    border-radius: 50px;
+    margin-bottom: 18px;
+    background: rgba(255, 255, 255, 0.1);
+}
+.inicio-titulo {
+    color: #fff;
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.15;
+    margin: 0 0 16px;
+}
+.inicio-desc {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.55;
+    margin: 0 0 22px;
+}
+.inicio-features {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 26px;
+}
+.feature-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.13);
+    border-radius: 14px;
+    padding: 14px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: #fff;
+}
+.feature-icon {
+    font-size: 26px;
+    line-height: 1;
+}
+.feature-card strong {
+    font-size: 13px;
     font-weight: 800;
-    font-size: 44px;
 }
-.texto-inicio p{
-    font-weight: 100;
-    color: #b8d6eb;
-    margin-bottom: 45px;
-    font-size: 20px;
+.feature-card small {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.68);
 }
-.boton-inicio{
-    padding: 20px 80px;
-    border-radius: 15px;
+.inicio-cta {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+.boton-inicio {
+    width: 100%;
+    padding: 18px 20px;
+    border-radius: 50px;
     border: none;
     background-color: #ffffff;
     color: #e31837;
-    font-size: 22px;
+    font-size: 20px;
     cursor: pointer;
     text-decoration: none;
     font-weight: 800;
-    /*margin-bottom: 65px;*/
-    display: inline-block;
-    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    display: block;
+    text-align: center;
+    box-sizing: border-box;
+    transition: transform 0.1s ease;
 }
-.boton-inicio:hover{
+.boton-inicio:hover {
     background-color: #f5f2f2;
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
-.boton-inicio:active{
-    transform: scale(0.95);
+.boton-inicio:active {
+    transform: scale(0.97);
 }
-.info-inicio{
+.info-inicio {
     font-size: 12px;
-    color: #a1bdd1be;
-    margin-top: 50px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+}
+.progress-dots {
+    display: flex;
+    gap: 8px;
+    margin-top: 22px;
+    padding-bottom: 8px;
+}
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+}
+.dot--active {
+    background: #ffffff;
 }
 /*******************************************************************************Login*/
 .login-body{
@@ -225,15 +292,15 @@
 }
 
 /*******************************************************************************Resultado*/
-.resultado-body{
-    min-height: 100vh; 
-    min-height: 98dvh; /* mejor para mobile */ 
-    /*background: linear-gradient(180deg, #2a8fd8 0%, #0b3a6d 100%);*/ 
-    background-image: url('img/Recurso1.png'); 
-    display: flex; flex-direction: column; 
-    /*justify-content: center;*/ 
-    align-items: center; /* centra horizontal */ 
-    text-align: center; /* centra el texto */
+.resultado-body {
+    min-height: 100dvh;
+    background-image: url('img/Recurso5.png');
+    background-size: cover;
+    background-position: center top;
+    font-family: Arial, Helvetica, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
 }
 .container-img{
     margin-top: 45px;
@@ -258,32 +325,6 @@
 }
 
 @media (max-width:768px){
-    .inicio-body{
-        justify-content: center; /* centra vertical */
-        align-items: center;     /* centra horizontal */
-        background-image: url('img/Recurso5.png');
-    }
-    .img-inicio {
-        width: 105%;
-        margin: 0 0 0 -10px;
-    }
-    .texto-inicio h1{
-        font-size: 32px;
-        margin-top: 0px;
-    }
-    .texto-inicio p{
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
-    .boton-inicio{
-        padding: 20px 80px;
-        font-size: 18px;
-        cursor: pointer;
-    }
-    .info-inicio{
-        font-size: 12px;
-        margin-top: 15px;
-    }
     /*******************************************************************************login*/
     .fondo-blanco {
         background-color: #ffffff;

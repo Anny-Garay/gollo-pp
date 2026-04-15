@@ -11,6 +11,9 @@ Route::get('/carga', [WebController::class, 'carga'])->name('carga');
 Route::post('/carga', [WebController::class, 'storeImagen'])->name('carga.store');
 Route::post('/analizar', [WebController::class, 'analizarImagen'])->name('analizar');
 Route::get('/resultado', [WebController::class, 'resultado'])->name('resultado');
+Route::post('/resultados', [WebController::class, 'storeResultados'])->name('resultados.store');
+Route::get('/resultados', [WebController::class, 'resultados'])->name('resultados');
+Route::post('/guardar', [WebController::class, 'guardar'])->name('guardar');
 
 // Admin
 Route::prefix('admin')->name('admin.')->group(function () {

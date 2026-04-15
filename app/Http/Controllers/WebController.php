@@ -190,6 +190,77 @@ EOT;
         return view('resultado', [
             'humana_score'   => session('humana_score'),
             'angulo_menique' => session('angulo_menique'),
+            'imagen_ruta'    => session('imagen_ruta'),
         ]);
+    }
+
+    public function storeResultados(Request $request)
+    {
+        $request->validate([
+            'imagen'         => 'required|string',
+            'humana_score'   => 'nullable|integer|min:0|max:100',
+            'angulo_menique' => 'nullable|numeric',
+        ]);
+
+        $imagenB64 = $request->imagen;
+        $rawB64    = preg_replace('/^data:image\/[a-z]+;base64,/', '', $imagenB64);
+        $decoded   = base64_decode($rawB64);
+        abort_if($decoded === false, 422, 'Imagen inválida.');
+
+        $filename = 'imagenes/' . uniqid('cam_', true) . '.jpg';
+        \Storage::disk('public')->put($filename, $decoded);
+
+        session([
+            'imagen_ruta'    => $filename,
+            'humana_score'   => $request->humana_score,
+            'angulo_menique' => $request->angulo_menique,
+        ]);
+
+        return redirect()->route('resultados');
+    }
+
+    public function resultados()
+    {
+        return view('resultado', [
+            'humana_score'   => session('humana_score'),
+            'angulo_menique' => session('angulo_menique'),
+            'imagen_ruta'    => session('imagen_ruta'),
+        ]);
+    }
+
+    public function guardar(Request $request)
+    {
+        $request->validate([
+            'nombre'  => 'required|string|max:255',
+            'cedula'  => 'required|string|max:50',
+            'celular' => 'required|string|max:30',
+            'email'   => 'required|email|max:255',
+        ]);
+
+        $participante = Participante::updateOrCreate(
+            ['cedula' => $request->cedula],
+            [
+                'nombre'  => $request->nombre,
+                'celular' => $request->celular,
+                'email'   => $request->email,
+            ]
+        );
+
+        $imagenRuta    = session('imagen_ruta');
+        $humanaScore   = session('humana_score');
+        $anguloMenique = session('angulo_menique');
+
+        if ($imagenRuta) {
+            Imagen::create([
+                'participante_id' => $participante->id,
+                'ruta'            => $imagenRuta,
+                'tipo'            => 'camara',
+                'humana_score'    => $humanaScore,
+                'angulo_menique'  => $anguloMenique,
+            ]);
+            session()->forget(['imagen_ruta', 'humana_score', 'angulo_menique']);
+        }
+
+        return redirect()->route('inicio')->with('registro_ok', true);
     }
 }
