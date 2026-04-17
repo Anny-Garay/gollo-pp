@@ -44,6 +44,16 @@
             object-fit: cover;
             display: block;
         }
+        #guia-mano {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 1;
+        }
         #btn-capturar {
             width: 100%;
             padding: 16px;
@@ -247,6 +257,19 @@
         }
         #canvas { display:none; }
         #form-resultados { display:none; }
+        #dev-upload-wrap {
+            width: 100%;
+            text-align: center;
+            opacity: 0.45;
+        }
+        #dev-upload-wrap label {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        #dev-upload { width: 100%; font-size: 0.8rem; }
     </style>
 </head>
 <body class="carga-body">
@@ -257,8 +280,15 @@
         <p class="camara-titulo">Tomá una foto de tu mano</p>
         <div class="camera-container">
             <video id="video" autoplay playsinline muted></video>
+            <img id="guia-mano" src="{{ asset('mano.jpeg') }}" alt="Guía de mano">
         </div>
         <button id="btn-capturar">⚪ Capturar</button>
+        @if(request()->query('web') == '1')
+        <div id="dev-upload-wrap">
+            <label>DEV — subir imagen</label>
+            <input type="file" id="dev-upload" accept="image/*">
+        </div>
+        @endif
         <div class="step-dots">
             <span class="step-dot"></span>
             <span class="step-dot step-dot--active"></span>
@@ -397,13 +427,8 @@
         document.getElementById('form-resultados').submit();
     }
 
-    document.getElementById('btn-capturar').addEventListener('click', async () => {
-        canvas.width  = videoEl.videoWidth;
-        canvas.height = videoEl.videoHeight;
-        canvas.getContext('2d').drawImage(videoEl, 0, 0);
-        capturedDataUrl = canvas.toDataURL('image/jpeg', 0.9);
-
-        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    async function procesarCaptura(dataUrl) {
+        capturedDataUrl = dataUrl;
 
         pasoCamara.style.display   = 'none';
         pasoAnalisis.style.display = 'flex';
@@ -448,7 +473,32 @@
         }
 
         aiDone = true;
+    }
+
+    document.getElementById('btn-capturar').addEventListener('click', async () => {
+        canvas.width  = videoEl.videoWidth;
+        canvas.height = videoEl.videoHeight;
+        canvas.getContext('2d').drawImage(videoEl, 0, 0);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+
+        await procesarCaptura(dataUrl);
     });
+
+    const devUpload = document.getElementById('dev-upload');
+    if (devUpload) {
+        devUpload.addEventListener('change', async () => {
+            const file = devUpload.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+                await procesarCaptura(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 </script>
 </body>
 </html>

@@ -14,6 +14,7 @@ Route::get('/resultado', [WebController::class, 'resultado'])->name('resultado')
 Route::post('/resultados', [WebController::class, 'storeResultados'])->name('resultados.store');
 Route::get('/resultados', [WebController::class, 'resultados'])->name('resultados');
 Route::post('/guardar', [WebController::class, 'guardar'])->name('guardar');
+Route::get('/img/{path}', [WebController::class, 'serveImagen'])->where('path', '.+')->name('img');
 
 // Admin
 Route::prefix('admin')->name('admin.')->group(function () {

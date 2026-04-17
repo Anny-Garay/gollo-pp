@@ -25,10 +25,12 @@
     display: flex;
     justify-content: flex-start;
     margin-bottom: 20px;
+    height: 150px;
 }
 .logo-img {
-    height: 44px;
-    width: auto;
+    width: 100%;
+    max-width: 382px;
+    height: 600px;
 }
 .inicio-content {
     flex: 1;

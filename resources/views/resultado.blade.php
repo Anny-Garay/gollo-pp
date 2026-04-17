@@ -266,7 +266,7 @@
     {{-- ── TOP PHOTO ── --}}
     <div class="res-photo-wrap">
         @if($imagen_ruta)
-            <img class="res-hand-photo" src="{{ asset('storage/' . $imagen_ruta) }}" alt="Tu mano">
+            <img class="res-hand-photo" src="{{ route('img', $imagen_ruta) }}" alt="Tu mano">
         @else
             <div class="res-photo-placeholder">✋</div>
         @endif
@@ -406,8 +406,9 @@
                            required autocomplete="email">
                 </div>
 
-                <button type="submit" class="btn-guardar">SIGUIENTE 🤙</button>
+                <button type="submit" class="btn-guardar">Obtener mi Documento dew canje</button>
             </form>
+            <sub>Solo usamos tus datos para generar el documento 🔒</sub>
         </div>
 
         <div class="step-dots">
