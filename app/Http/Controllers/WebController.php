@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Participante;
-use App\Models\Imagen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -89,14 +88,12 @@ class WebController extends Controller
         ]);
 
         // Guardar participante
-        $participante = Participante::updateOrCreate(
-            ['cedula' => $request->cedula],
-            [
-                'nombre'  => $request->nombre,
-                'celular' => $request->celular,
-                'email'   => $request->email,
-            ]
-        );
+        Participante::create([
+            'nombre'  => $request->nombre,
+            'cedula'  => $request->cedula,
+            'celular' => $request->celular,
+            'email'   => $request->email,
+        ]);
 
         // Guardar imagen base64 en disco
         $imagenB64 = $request->imagen;
@@ -109,12 +106,14 @@ class WebController extends Controller
         $humanaScore   = $request->input('humana_score');
         $anguloMenique = $request->input('angulo_menique');
 
-        Imagen::create([
-            'participante_id' => $participante->id,
-            'ruta'            => $filename,
-            'tipo'            => 'camara',
-            'humana_score'    => $humanaScore,
-            'angulo_menique'  => $anguloMenique,
+        Participante::create([
+            'nombre'         => $request->nombre,
+            'cedula'         => $request->cedula,
+            'celular'        => $request->celular,
+            'email'          => $request->email,
+            'foto'           => $filename,
+            'humana_score'   => $humanaScore,
+            'angulo_menique' => $anguloMenique,
         ]);
 
         return redirect()->route('resultado')->with([
@@ -243,30 +242,44 @@ EOT;
             'email'   => 'required|email|max:255',
         ]);
 
-        $participante = Participante::updateOrCreate(
-            ['cedula' => $request->cedula],
-            [
-                'nombre'  => $request->nombre,
-                'celular' => $request->celular,
-                'email'   => $request->email,
-            ]
-        );
-
         $imagenRuta    = session('imagen_ruta');
         $humanaScore   = $request->input('humana_score')   ?? session('humana_score');
         $anguloMenique = $request->input('angulo_menique') ?? session('angulo_menique');
 
-        if ($imagenRuta) {
-            Imagen::create([
-                'participante_id' => $participante->id,
-                'ruta'            => $imagenRuta,
-                'tipo'            => 'camara',
-                'humana_score'    => $humanaScore,
-                'angulo_menique'  => $anguloMenique,
-            ]);
-            session()->forget(['imagen_ruta', 'humana_score', 'angulo_menique']);
-        }
+        Participante::create([
+            'nombre'         => $request->nombre,
+            'cedula'         => $request->cedula,
+            'celular'        => $request->celular,
+            'email'          => $request->email,
+            'foto'           => $imagenRuta,
+            'humana_score'   => $humanaScore,
+            'angulo_menique' => $anguloMenique,
+        ]);
 
-        return redirect()->route('inicio')->with('registro_ok', true);
+        session()->forget(['imagen_ruta', 'humana_score', 'angulo_menique']);
+
+        $docNumber = 'PP-' . strtoupper(substr(md5($request->cedula . now()->timestamp), 0, 8));
+
+        return redirect()->route('listo')->with([
+            'nombre'         => $request->nombre,
+            'cedula'         => $request->cedula,
+            'angulo_menique' => $anguloMenique,
+            'humana_score'   => $humanaScore,
+            'doc_number'     => $docNumber,
+        ]);
+    }
+
+    public function listo()
+    {
+        if (!session('doc_number')) {
+            return redirect()->route('inicio');
+        }
+        return view('listo', [
+            'nombre'         => session('nombre'),
+            'cedula'         => session('cedula'),
+            'angulo_menique' => session('angulo_menique'),
+            'humana_score'   => session('humana_score'),
+            'doc_number'     => session('doc_number'),
+        ]);
     }
 }

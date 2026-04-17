@@ -14,10 +14,12 @@ Route::get('/resultado', [WebController::class, 'resultado'])->name('resultado')
 Route::post('/resultados', [WebController::class, 'storeResultados'])->name('resultados.store');
 Route::get('/resultados', [WebController::class, 'resultados'])->name('resultados');
 Route::post('/guardar', [WebController::class, 'guardar'])->name('guardar');
+Route::get('/listo', [WebController::class, 'listo'])->name('listo');
 Route::get('/img/{path}', [WebController::class, 'serveImagen'])->where('path', '.+')->name('img');
 
 // Admin
 Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [AdminController::class, 'loginForm'])->name('login');
     Route::get('login', [AdminController::class, 'loginForm'])->name('login');
     Route::post('login', [AdminController::class, 'loginPost'])->name('login.post');
     Route::post('logout', [AdminController::class, 'logout'])->name('logout');

@@ -12,5 +12,8 @@ class Participante extends Model
         'celular',
         'email',
         'foto',
+        'humana_score',
+        'angulo_menique',
+        'imagen_ruta',
     ];
 }

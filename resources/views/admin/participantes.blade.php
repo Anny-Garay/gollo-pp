@@ -59,6 +59,7 @@
             <tr>
                 <th>#</th>
                 <th>Foto</th>
+                <th>Angulo meñique</th>
                 <th>Nombre y Apellido</th>
                 <th>Cédula</th>
                 <th>Celular</th>
@@ -73,11 +74,12 @@
                 <td>{{ $p->id }}</td>
                 <td>
                     @if($p->foto)
-                        <img class="foto-thumb" src="{{ asset('storage/' . $p->foto) }}" alt="foto">
+                        <img class="foto-thumb" src="{{ asset('img/' . $p->foto) }}" alt="foto">
                     @else
                         <span class="sin-foto">Sin foto</span>
                     @endif
                 </td>
+                <td>{{ $p->angulo_menique }}</td>
                 <td>{{ $p->nombre }}</td>
                 <td>{{ $p->cedula }}</td>
                 <td>{{ $p->celular }}</td>
