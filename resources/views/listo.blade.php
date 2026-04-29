@@ -524,7 +524,7 @@
             @foreach($productos as $prod)
             <div class="prod-card">
                 @if($prod->foto)
-                    <img class="prod-card-img" src="{{ asset('storage/' . $prod->foto) }}" alt="{{ $prod->nombre }}">
+                    <img class="prod-card-img" src="{{ asset('img/' . $prod->foto) }}" alt="{{ $prod->nombre }}">
                 @else
                     <div class="prod-card-img-placeholder">📱</div>
                 @endif

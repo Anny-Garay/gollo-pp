@@ -90,7 +90,7 @@
                     <td>{{ $p->orden }}</td>
                     <td>
                         @if($p->foto)
-                            <img class="prod-thumb" src="{{ asset('storage/' . $p->foto) }}" alt="{{ $p->nombre }}">
+                            <img class="prod-thumb" src="{{ asset('img/' . $p->foto) }}" alt="{{ $p->nombre }}">
                         @else
                             <span class="sin-foto">Sin foto</span>
                         @endif
@@ -168,7 +168,7 @@
                 @isset($producto)
                     @if($producto->foto)
                         <div class="preview-wrap">
-                            <img src="{{ asset('storage/' . $producto->foto) }}" alt="Foto actual">
+                            <img src="{{ asset('img/' . $producto->foto) }}" alt="Foto actual">
                         </div>
                     @endif
                 @endisset
