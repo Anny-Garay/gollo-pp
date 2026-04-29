@@ -416,7 +416,7 @@
                            required autocomplete="email">
                 </div>
 
-                <button type="submit" class="btn-guardar">Obtener mi Documento dew canje</button>
+                <button type="submit" class="btn-guardar">Obtener mi Documento de canje</button>
             </form>
             <sub>Solo usamos tus datos para generar el documento 🔒</sub>
         </div>

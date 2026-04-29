@@ -31,5 +31,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('participantes/{participante}', [AdminController::class, 'destroyParticipante'])->name('participantes.destroy');
         Route::get('niveles', [AdminController::class, 'niveles'])->name('niveles');
         Route::put('niveles/{nivel}', [AdminController::class, 'nivelesUpdate'])->name('niveles.update');
+        Route::get('productos', [AdminController::class, 'productos'])->name('productos');
+        Route::post('productos', [AdminController::class, 'productosStore'])->name('productos.store');
+        Route::get('productos/{producto}/edit', [AdminController::class, 'productosEdit'])->name('productos.edit');
+        Route::put('productos/{producto}', [AdminController::class, 'productosUpdate'])->name('productos.update');
+        Route::delete('productos/{producto}', [AdminController::class, 'productosDestroy'])->name('productos.destroy');
     });
 });

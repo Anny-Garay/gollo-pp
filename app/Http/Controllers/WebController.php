@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Participante;
+use App\Models\Producto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -276,12 +277,14 @@ EOT;
         if (!session('doc_number')) {
             return redirect()->route('inicio');
         }
+        $productos = Producto::where('activo', true)->orderBy('orden')->orderBy('id')->get();
         return view('listo', [
             'nombre'         => session('nombre'),
             'cedula'         => session('cedula'),
             'angulo_menique' => session('angulo_menique'),
             'humana_score'   => session('humana_score'),
             'doc_number'     => session('doc_number'),
+            'productos'      => $productos,
         ]);
     }
 }

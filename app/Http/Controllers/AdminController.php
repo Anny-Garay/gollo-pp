@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\NivelTexto;
 use App\Models\Participante;
+use App\Models\Producto;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -112,5 +113,83 @@ class AdminController extends Controller
         );
 
         return back()->with('success', "Nivel {$nivel} guardado correctamente.");
+    }
+
+    public function productos()
+    {
+        $productos = Producto::orderBy('orden')->orderBy('id')->get();
+        return view('admin.productos', compact('productos'));
+    }
+
+    public function productosStore(Request $request)
+    {
+        $request->validate([
+            'nombre'       => 'required|string|max:255',
+            'precio'       => 'required|numeric|min:0',
+            'link_externo' => 'required|url|max:500',
+            'foto'         => 'nullable|image|max:5120',
+            'orden'        => 'nullable|integer|min:0',
+        ]);
+
+        $fotoPath = null;
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('productos', 'public');
+        }
+
+        Producto::create([
+            'nombre'       => $request->nombre,
+            'precio'       => $request->precio,
+            'link_externo' => $request->link_externo,
+            'foto'         => $fotoPath,
+            'orden'        => $request->input('orden', 0),
+            'activo'       => $request->boolean('activo', true),
+        ]);
+
+        return redirect()->route('admin.productos')->with('success', 'Producto agregado.');
+    }
+
+    public function productosEdit(Producto $producto)
+    {
+        $productos = Producto::orderBy('orden')->orderBy('id')->get();
+        return view('admin.productos', compact('productos', 'producto'));
+    }
+
+    public function productosUpdate(Request $request, Producto $producto)
+    {
+        $request->validate([
+            'nombre'       => 'required|string|max:255',
+            'precio'       => 'required|numeric|min:0',
+            'link_externo' => 'required|url|max:500',
+            'foto'         => 'nullable|image|max:5120',
+            'orden'        => 'nullable|integer|min:0',
+        ]);
+
+        $data = [
+            'nombre'       => $request->nombre,
+            'precio'       => $request->precio,
+            'link_externo' => $request->link_externo,
+            'orden'        => $request->input('orden', 0),
+            'activo'       => $request->boolean('activo'),
+        ];
+
+        if ($request->hasFile('foto')) {
+            if ($producto->foto) {
+                \Storage::disk('public')->delete($producto->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('productos', 'public');
+        }
+
+        $producto->update($data);
+
+        return redirect()->route('admin.productos')->with('success', 'Producto actualizado.');
+    }
+
+    public function productosDestroy(Producto $producto)
+    {
+        if ($producto->foto) {
+            \Storage::disk('public')->delete($producto->foto);
+        }
+        $producto->delete();
+        return back()->with('success', 'Producto eliminado.');
     }
 }
