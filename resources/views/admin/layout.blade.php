@@ -36,6 +36,7 @@
         <h1>⚙️ Panel de Administración</h1>
         <div style="display:flex; gap:20px; align-items:center;">
             <a href="{{ route('admin.participantes') }}">Participantes</a>
+            <a href="{{ route('admin.niveles') }}">Textos por Nivel</a>
             <a href="{{ route('admin.register') }}">+ Nuevo usuario</a>
             <a href="{{ route('admin.logout') }}"
                onclick="event.preventDefault(); document.getElementById('logout-form').submit()">

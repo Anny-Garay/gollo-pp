@@ -239,8 +239,8 @@
 </head>
 <body class="resultado-body">
 @php
-    $angulo    = (float)($angulo_menique ?? 0);
-    $maxGauge  = 40.0;
+    $angulo    = min(20.0, (float)($angulo_menique ?? 0));
+    $maxGauge  = 20.0;
     $ratio     = min(max($angulo / $maxGauge, 0.0), 1.0);
     $arcDeg    = 180.0 * (1.0 - $ratio);
     $arcRad    = deg2rad($arcDeg);
@@ -254,9 +254,14 @@
     $dotX = round($cx + $rDot * cos($arcRad), 2);
     $dotY = round($cy - $rDot * sin($arcRad), 2);
 
-    if ($angulo < 10)     { $nivel = 'NIVEL LEVE';     $nBg = '#e8f5e9'; $nTxt = '#2e7d32'; $nBor = '#2e7d32'; }
-    elseif ($angulo < 20) { $nivel = 'NIVEL MODERADO'; $nBg = '#fff3e0'; $nTxt = '#e65100'; $nBor = '#e65100'; }
-    else                  { $nivel = 'NIVEL ALTO';     $nBg = '#fff0f0'; $nTxt = '#e31837'; $nBor = '#e31837'; }
+    if ($angulo <= 4)      { $nivel_num = 1; $nBg = '#e8f5e9'; $nTxt = '#2e7d32'; $nBor = '#2e7d32'; }
+    elseif ($angulo <= 8)  { $nivel_num = 2; $nBg = '#f9fbe7'; $nTxt = '#558b2f'; $nBor = '#558b2f'; }
+    elseif ($angulo <= 12) { $nivel_num = 3; $nBg = '#fffde7'; $nTxt = '#f9a825'; $nBor = '#f9a825'; }
+    elseif ($angulo <= 16) { $nivel_num = 4; $nBg = '#fff3e0'; $nTxt = '#e65100'; $nBor = '#e65100'; }
+    else                   { $nivel_num = 5; $nBg = '#fff0f0'; $nTxt = '#e31837'; $nBor = '#e31837'; }
+
+    $nivelTexto = \App\Models\NivelTexto::where('nivel', $nivel_num)->first();
+    $nivel      = $nivelTexto?->titulo ?? "NIVEL {$nivel_num}";
 
     $anguloDisplay = $angulo_menique !== null ? number_format($angulo, 1) : '—';
 @endphp
@@ -345,8 +350,13 @@
 
         {{-- ── DESCRIPTION CARD ── --}}
         <div class="desc-card">
-            <p class="desc-card-title">🔥 ¡Mirá vos, ese meñique ya pide un respiro! 🎉</p>
-            <p class="desc-card-body">Nuestros cálculos detectaron que tu dedo ha hecho un gran esfuerzo sosteniendo tu cel. Para que no se canse más, aquí tenés tu documento de canje por un modelo más liviano en Gollo. ¡Aprovechá y estrenálo hoy mismo!</p>
+            @if($nivelTexto)
+                <p class="desc-card-title">{{ $nivelTexto->titulo }}</p>
+                <div class="desc-card-body">{!! $nivelTexto->contenido !!}</div>
+            @else
+                <p class="desc-card-title">🔥 ¡Mirá vos, ese meñique ya pide un respiro! 🎉</p>
+                <p class="desc-card-body">Nuestros cálculos detectaron que tu dedo ha hecho un gran esfuerzo sosteniendo tu cel. Para que no se canse más, aquí tenés tu documento de canje por un modelo más liviano en Gollo. ¡Aprovechá y estrenálo hoy mismo!</p>
+            @endif
         </div>
 
         {{-- ── FORM CARD ── --}}

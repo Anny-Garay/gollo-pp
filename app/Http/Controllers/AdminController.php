@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\NivelTexto;
 use App\Models\Participante;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -85,5 +86,31 @@ class AdminController extends Controller
         }
         $participante->delete();
         return back()->with('success', 'Participante eliminado.');
+    }
+
+    public function niveles()
+    {
+        $niveles = NivelTexto::orderBy('nivel')->get()->keyBy('nivel');
+        return view('admin.niveles', compact('niveles'));
+    }
+
+    public function nivelesUpdate(Request $request, int $nivel)
+    {
+        abort_unless($nivel >= 1 && $nivel <= 5, 404);
+
+        $request->validate([
+            'titulo'    => 'required|string|max:255',
+            'contenido' => 'required|string',
+        ]);
+
+        NivelTexto::updateOrCreate(
+            ['nivel' => $nivel],
+            [
+                'titulo'    => $request->titulo,
+                'contenido' => $request->contenido,
+            ]
+        );
+
+        return back()->with('success', "Nivel {$nivel} guardado correctamente.");
     }
 }

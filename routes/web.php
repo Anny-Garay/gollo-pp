@@ -29,5 +29,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::get('participantes', [AdminController::class, 'participantes'])->name('participantes');
         Route::delete('participantes/{participante}', [AdminController::class, 'destroyParticipante'])->name('participantes.destroy');
+        Route::get('niveles', [AdminController::class, 'niveles'])->name('niveles');
+        Route::put('niveles/{nivel}', [AdminController::class, 'nivelesUpdate'])->name('niveles.update');
     });
 });

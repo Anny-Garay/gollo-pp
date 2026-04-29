@@ -181,7 +181,7 @@ EOT;
             }
 
             $humanaScore   = isset($data['humana_score'])   ? (int)   $data['humana_score']   : null;
-            $anguloMenique = isset($data['angulo_menique']) ? (float) $data['angulo_menique'] : null;
+            $anguloMenique = isset($data['angulo_menique']) ? min(20.0, (float) $data['angulo_menique']) : null;
 
             return [$humanaScore, $anguloMenique];
         } catch (\Throwable $e) {
@@ -215,10 +215,12 @@ EOT;
         $filename = 'imagenes/' . uniqid('cam_', true) . '.jpg';
         \Storage::disk('public')->put($filename, $decoded);
 
+        $anguloMenique = $request->angulo_menique !== null ? min(20.0, (float) $request->angulo_menique) : null;
+
         session([
             'imagen_ruta'    => $filename,
             'humana_score'   => $request->humana_score,
-            'angulo_menique' => $request->angulo_menique,
+            'angulo_menique' => $anguloMenique,
         ]);
 
         return redirect()->route('resultados');
