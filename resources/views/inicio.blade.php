@@ -1,19 +1,6 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pink Promos - Gollo.com</title>
+@extends('layouts.web')
 
-  <!-- Bootstrap 5 CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
-  <link href="{{ asset('/css/custom.css') }}" rel="stylesheet"/>
-</head>
-<body>
-
+@section('content')
   <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
   <section class="hero">
     <div class="container-fluid h-100 px-0">
@@ -21,11 +8,7 @@
 
         <!-- LEFT – hand photo -->
         <div class="col-6 position-relative" style="min-height:480px;">
-          <!--
-            Reemplaza el div de abajo con:
-            <img src="tu-imagen-mano.png" alt="Mano" class="hero-hand">
-          -->
-          <div class="img-placeholder hero-hand">
+          <div class="hero-hand">
             <img src="{{ asset('/img/dedo-grafico.png') }}" alt="Mano" class="dedo-grafico">
           </div>
         </div>
@@ -130,9 +113,4 @@
 
     </div>
   </section>
-
-
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@endsection
