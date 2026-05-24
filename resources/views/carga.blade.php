@@ -345,9 +345,9 @@
     {{-- ── Form oculto → POST /resultados ── --}}
     <form id="form-resultados" method="POST" action="{{ route('resultados.store') }}">
         @csrf
-        <input type="hidden" id="fi-imagen"  name="imagen">
-        <input type="hidden" id="fi-humana"  name="humana_score">
-        <input type="hidden" id="fi-angulo"  name="angulo_menique">
+        <input type="hidden" id="fi-imagen-path" name="imagen_path">
+        <input type="hidden" id="fi-humana"       name="humana_score">
+        <input type="hidden" id="fi-angulo"       name="angulo_menique">
     </form>
 
 </div>
@@ -362,6 +362,9 @@
     let aiDone           = false;
     let aiScore          = null;
     let aiAngulo         = null;
+    let aiSoloMenique    = null;
+    let aiImagenTemp     = null;   // ruta temporal en storage (del paso 1)
+    let aiImagenPath     = null;   // ruta definitiva anotada (del paso 2)
     let currentPct       = 0;
     let progressInterval = null;
 
@@ -421,55 +424,104 @@
     }
 
     function submitResultados() {
-        document.getElementById('fi-imagen').value = capturedDataUrl;
-        document.getElementById('fi-humana').value = aiScore  !== null ? aiScore  : '';
-        document.getElementById('fi-angulo').value = aiAngulo !== null ? aiAngulo : '';
+        document.getElementById('fi-imagen-path').value = aiImagenPath || aiImagenTemp || '';
+        document.getElementById('fi-humana').value      = aiScore  !== null ? aiScore  : '';
+        document.getElementById('fi-angulo').value      = aiAngulo !== null ? aiAngulo : '';
         document.getElementById('form-resultados').submit();
     }
 
+    function resetCaptura() {
+        capturedDataUrl = null;
+        aiDone          = false;
+        aiScore         = null;
+        aiAngulo        = null;
+        aiSoloMenique   = null;
+        aiImagenTemp    = null;
+        aiImagenPath    = null;
+        currentPct      = 0;
+        setBar(0);
+        pasoAnalisis.style.display = 'none';
+        pasoCamara.style.display   = 'flex';
+        iniciarCamara();
+    }
+
+    // Redimensiona la imagen a max 1024px para evitar payloads enormes
+    function resizeDataUrl(dataUrl, maxPx, quality) {
+        return new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => {
+                let w = img.width, h = img.height;
+                if (w > maxPx || h > maxPx) {
+                    if (w >= h) { h = Math.round(h * maxPx / w); w = maxPx; }
+                    else        { w = Math.round(w * maxPx / h); h = maxPx; }
+                }
+                const c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                c.getContext('2d').drawImage(img, 0, 0, w, h);
+                resolve(c.toDataURL('image/jpeg', quality));
+            };
+            img.src = dataUrl;
+        });
+    }
+
     async function procesarCaptura(dataUrl) {
-        capturedDataUrl = dataUrl;
+        // Comprimir antes de enviar para evitar 413
+        capturedDataUrl = await resizeDataUrl(dataUrl, 1024, 0.85);
 
         pasoCamara.style.display   = 'none';
         pasoAnalisis.style.display = 'flex';
         scanFoto.src = capturedDataUrl;
         startProgress();
 
+        // ── PASO 1: análisis (GPT-4o) ──────────────────────────────────────
         try {
             const resp = await fetch('{{ route("analizar") }}', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': CSRF,
-                    'Accept': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
                 body: JSON.stringify({ imagen: capturedDataUrl }),
             });
             const data = await resp.json();
-            aiScore  = data.humana_score   ?? null;
-            aiAngulo = data.angulo_menique ?? null;
+            aiScore       = data.humana_score   ?? null;
+            aiAngulo      = data.angulo_menique ?? null;
+            aiSoloMenique = data.solo_menique   ?? null;
+            aiImagenTemp  = data.imagen_temp    ?? null;
         } catch (e) {
-            aiScore  = null;
-            aiAngulo = null;
+            aiScore = aiAngulo = aiSoloMenique = aiImagenTemp = null;
         }
 
-        // Si la foto no parece una mano real, volvemos a la cámara
-        if (aiScore !== null && aiScore < 40) {
-            clearInterval(progressInterval);
-            progressInterval = null;
+        // Validar: solo el meñique extendido
+        if (aiSoloMenique === false) {
+            clearInterval(progressInterval); progressInterval = null;
             setTimeout(() => {
-                alert('Necesitamos una foto más nítida de tu mano real. Por favor intentá de nuevo en buena iluminación 📸');
-                pasoAnalisis.style.display = 'none';
-                pasoCamara.style.display   = 'flex';
-                capturedDataUrl = null;
-                aiDone   = false;
-                aiScore  = null;
-                aiAngulo = null;
-                currentPct = 0;
-                setBar(0);
-                iniciarCamara();
+                alert('La foto debe ser con un puño y solo el dedo meñique extendido. Por favor intentá de nuevo.');
+                resetCaptura();
             }, 500);
             return;
+        }
+
+        // Validar: mano real
+        if (aiScore !== null && aiScore < 40) {
+            clearInterval(progressInterval); progressInterval = null;
+            setTimeout(() => {
+                alert('Necesitamos una foto más nítida de tu mano real. Por favor intentá de nuevo en buena iluminación 📸');
+                resetCaptura();
+            }, 500);
+            return;
+        }
+
+        // ── PASO 2: generar imagen anotada (gpt-image-1) ───────────────────
+        if (aiImagenTemp && aiAngulo !== null) {
+            try {
+                const resp2 = await fetch('{{ route("generar.anotada") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+                    body: JSON.stringify({ imagen_temp: aiImagenTemp, angulo_menique: aiAngulo }),
+                });
+                const data2 = await resp2.json();
+                aiImagenPath = data2.imagen_path ?? null;
+            } catch (e) {
+                aiImagenPath = null;
+            }
         }
 
         aiDone = true;

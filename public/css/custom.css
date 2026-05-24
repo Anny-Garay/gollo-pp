@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+  --blue:   #004DB5;
+  --yellow: #F5C800;
+  --white:  #FFFFFF;
+  --blue2: #0167B8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background-color: var(--blue);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* ───── HERO ───── */
+.hero {
+  position: relative;
+  background-color: var(--blue);
+  min-height: 480px;
+  overflow: hidden;
+}
+
+/* hand image – left side */
+.hero-hand {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 52%;
+  object-fit: cover;
+  object-position: right center;
+}
+
+/* placeholder box when image is missing */
+.img-placeholder {
+  background: rgba(255,255,255,.12);
+  border: 2px dashed rgba(255,255,255,.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,.5);
+  font-size: .8rem;
+  text-align: center;
+  border-radius: 8px;
+}
+
+/* Pink Promos logo block */
+.logo-block {
+  position: relative;
+  z-index: 2;
+}
+
+.logo-pink {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: clamp(3.5rem, 8vw, 6rem);
+  line-height: 1;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: -1px;
+}
+
+.logo-promos {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  color: var(--yellow);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.logo-gollo {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: clamp(.9rem, 2vw, 1.3rem);
+  color: var(--white);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* fist icon placeholder next to PINK */
+.fist-icon {
+  width: clamp(60px, 9vw, 90px);
+  height: clamp(60px, 9vw, 90px);
+  flex-shrink: 0;
+}
+
+.tagline {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
+  line-height: 1.15;
+  color: var(--white);
+  position: relative;
+  z-index: 2;
+}
+
+/* ───── SECTION: Analizar ───── */
+.section-analizar {
+  background-color: var(--blue);
+  padding: 56px 0 40px;
+}
+
+.analizar-title {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  line-height: 1.2;
+  color: var(--white);
+}
+
+/* hand / phone illustration placeholders */
+.illus-placeholder {
+  width: 130px;
+  height: 150px;
+  border-radius: 12px;
+}
+
+/* ───── BADGES ───── */
+.badges-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 24px 0 0;
+}
+
+.badge-card {
+  background: rgba(255,255,255,.13);
+  border: 1.5px solid rgba(255,255,255,.2);
+  border-radius: 12px;
+  width: 120px;
+  padding: 18px 10px 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+}
+
+.badge-label {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: .85rem;
+  color: var(--yellow);
+  line-height: 1.1;
+}
+
+.badge-sub {
+  font-size: .72rem;
+  color: rgba(255,255,255,.7);
+}
+
+/* ───── FOOTER TEXT ───── */
+.footer-text {
+  font-size: 30px;
+  line-height: 36px;
+  font-weight: bold;
+  color: var(--white);
+  text-align: center;
+  padding: 32px 24px 0;
+}
+
+/* ───── CTA BUTTON ───── */
+.btn-cta {
+  background-color: var(--yellow);
+  color: var(--blue2);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1.15rem;
+  border: none;
+  border-radius: 50px;
+  padding: 16px 52px;
+  letter-spacing: .5px;
+  transition: transform .15s, box-shadow .15s;
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.btn-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  color: var(--white);
+}
+
+.cta-arrows {
+  font-size: 1rem;
+  opacity: .7;
+}
