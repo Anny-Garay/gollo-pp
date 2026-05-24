@@ -68,11 +68,60 @@ class WebController extends Controller
     public function analizarImagen(Request $request)
     {
         $request->validate(['imagen' => 'required|string']);
-        [$humanaScore, $anguloMenique] = $this->analizarImagenConIA($request->imagen);
+
+        // Guardar imagen en storage temporal para no re-enviarla en el segundo paso
+        $rawB64  = preg_replace('/^data:image\/[a-z]+;base64,/', '', $request->imagen);
+        $decoded = base64_decode($rawB64);
+        abort_if($decoded === false, 422, 'Imagen inválida.');
+
+        $imagenTemp = 'imagenes/temp/' . \Str::uuid() . '.jpg';
+        \Storage::disk('public')->put($imagenTemp, $decoded);
+
+        [$humanaScore, $anguloMenique, $soloMenique] = $this->analizarImagenConIA($request->imagen);
+
         return response()->json([
             'humana_score'   => $humanaScore,
             'angulo_menique' => $anguloMenique,
+            'solo_menique'   => $soloMenique,
+            'imagen_temp'    => $imagenTemp,
         ]);
+    }
+
+    /**
+     * Paso 2: recibe la ruta temporal y el ángulo, genera la imagen anotada
+     * y devuelve la ruta definitiva en storage. Sin payloads de base64.
+     */
+    public function generarAnotada(Request $request)
+    {
+        $request->validate([
+            'imagen_temp'    => 'required|string',
+            'angulo_menique' => 'required|numeric',
+        ]);
+
+        $imagenTemp = $request->imagen_temp;
+
+        // Seguridad: solo rutas bajo imagenes/temp/
+        abort_unless(
+            str_starts_with($imagenTemp, 'imagenes/temp/') && !str_contains($imagenTemp, '..'),
+            422, 'Ruta inválida.'
+        );
+        abort_unless(\Storage::disk('public')->exists($imagenTemp), 404, 'Imagen temporal no encontrada.');
+
+        $bytes  = \Storage::disk('public')->get($imagenTemp);
+        $angulo = min(20.0, (float) $request->angulo_menique);
+
+        $imagenAnotadaPath = $this->generarImagenAnotadaDesdeBytes($bytes, $angulo);
+
+        if ($imagenAnotadaPath) {
+            // Anotación exitosa: borrar temporal
+            \Storage::disk('public')->delete($imagenTemp);
+            return response()->json(['imagen_path' => $imagenAnotadaPath]);
+        }
+
+        // Falló la anotación: mover la temporal como imagen definitiva
+        $finalPath = 'imagenes/' . uniqid('cam_', true) . '.jpg';
+        \Storage::disk('public')->move($imagenTemp, $finalPath);
+        return response()->json(['imagen_path' => $finalPath]);
     }
 
     public function storeImagen(Request $request)
@@ -124,70 +173,117 @@ class WebController extends Controller
     }
 
     /**
-     * Llama a OpenAI Vision con la imagen base64 y devuelve [humana_score, angulo_menique].
-     * Retorna [null, null] si la llamada falla.
+     * Llama a OpenAI Vision (gpt-4o) para analizar la imagen y devuelve
+     * [humana_score, angulo_menique, solo_menique].
+     * Retorna [null, null, null] si la llamada falla.
      */
     private function analizarImagenConIA(string $imageDataUrl): array
     {
         $apiKey = config('services.openai.key');
         if (!$apiKey) {
-            return [null, null];
+            return [null, null, null, null];
         }
+
+        $dedo_path = public_path('dedo-grafico.png');
+        $dedoB64   = file_exists($dedo_path)
+            ? 'data:image/png;base64,' . base64_encode(file_get_contents($dedo_path))
+            : null;
 
         $prompt = <<<EOT
 Analiza esta imagen y responde ÚNICAMENTE con un objeto JSON válido, sin explicaciones ni markdown.
-El JSON debe tener exactamente estos dos campos:
+El JSON debe tener exactamente estos tres campos:
 {
   "humana_score": <entero del 0 al 100 indicando qué tan probable es que sea una mano humana real>,
-  "angulo_menique": <número decimal con el ángulo de inclinación del dedo meñique en grados respecto a la vertical, o 0 si no se puede medir. Trata de medirlo aunque el meñique esté parcialmente oculto, y si no se ve para nada, pon 0.>
+  "angulo_menique": <número decimal con el ángulo de inclinación del dedo meñique en grados respecto a la vertical (como en la imagen de referencia), o 0 si no se puede medir>,
+  "solo_menique": <true si hay exactamente un dedo extendido y los demás están doblados en puño, false si hay 0 o 2+ dedos extendidos>
 }
 EOT;
+
+        $content = [];
+        if ($dedoB64) {
+            $content[] = ['type' => 'image_url', 'image_url' => ['url' => $dedoB64, 'detail' => 'low']];
+        }
+        $content[] = ['type' => 'image_url', 'image_url' => ['url' => $imageDataUrl, 'detail' => 'low']];
+        $content[] = ['type' => 'text', 'text' => $prompt];
 
         try {
             $response = Http::withToken($apiKey)
                 ->timeout(30)
                 ->post('https://api.openai.com/v1/chat/completions', [
                     'model'      => 'gpt-4o',
-                    'max_tokens' => 100,
-                    'messages'   => [
-                        [
-                            'role'    => 'user',
-                            'content' => [
-                                [
-                                    'type'      => 'image_url',
-                                    'image_url' => ['url' => $imageDataUrl, 'detail' => 'low'],
-                                ],
-                                [
-                                    'type' => 'text',
-                                    'text' => $prompt,
-                                ],
-                            ],
-                        ],
-                    ],
+                    'max_tokens' => 150,
+                    'messages'   => [['role' => 'user', 'content' => $content]],
                 ]);
 
             if (!$response->successful()) {
                 \Log::warning('OpenAI API error', ['status' => $response->status(), 'body' => $response->body()]);
-                return [null, null];
+                return [null, null, null, null];
             }
 
-            $content = $response->json('choices.0.message.content', '');
-            // Limpiar posible markdown ```json ... ```
-            $content = trim(preg_replace('/^```(?:json)?\s*|\s*```$/m', '', trim($content)));
-            $data    = json_decode($content, true);
+            $raw  = $response->json('choices.0.message.content', '');
+            $raw  = trim(preg_replace('/^```(?:json)?\s*|\s*```$/m', '', trim($raw)));
+            $data = json_decode($raw, true);
 
             if (!is_array($data)) {
-                \Log::warning('OpenAI respuesta no parseable', ['content' => $content]);
-                return [null, null];
+                \Log::warning('OpenAI respuesta no parseable', ['content' => $raw]);
+                return [null, null, null, null];
             }
 
             $humanaScore   = isset($data['humana_score'])   ? (int)   $data['humana_score']   : null;
             $anguloMenique = isset($data['angulo_menique']) ? min(20.0, (float) $data['angulo_menique']) : null;
+            $soloMenique   = isset($data['solo_menique'])   ? (bool)  $data['solo_menique']   : null;
 
-            return [$humanaScore, $anguloMenique];
+            return [$humanaScore, $anguloMenique, $soloMenique];
         } catch (\Throwable $e) {
             \Log::error('OpenAI Vision exception', ['error' => $e->getMessage()]);
-            return [null, null];
+            return [null, null, null];
+        }
+    }
+
+    /**
+     * Llama a gpt-image-1 (images/edits) con los bytes crudos de la imagen,
+     * guarda el resultado en storage y devuelve la ruta, o null si falla.
+     */
+    private function generarImagenAnotadaDesdeBytes(string $bytes, float $angulo): ?string
+    {
+        $apiKey = config('services.openai.key');
+        if (!$apiKey) return null;
+
+        $anguloStr = number_format($angulo, 1);
+
+        $prompt = "This hand photo shows a fist with only the pinky finger extended. "
+            . "Add a clean technical angle-measurement overlay: "
+            . "(1) draw a thin vertical white reference line along the full length of the pinky finger; "
+            . "(2) on the left side add evenly-spaced horizontal white lines labeled 0, 20, 40, 60, 80, 100 from bottom to top; "
+            . "(3) draw a yellow dashed diagonal line at {$anguloStr} degrees from vertical along the pinky to show its inclination; "
+            . "(4) label '{$anguloStr}\u00b0' in bold yellow near the dashed line. "
+            . "Keep the original hand photo fully visible beneath the overlay. "
+            . "Match the style of a scientific measurement diagram similar to the reference.";
+
+        try {
+            $response = Http::withToken($apiKey)
+                ->timeout(90)
+                ->attach('image[]', $bytes, 'hand.jpg', ['Content-Type' => 'image/jpeg'])
+                ->post('https://api.openai.com/v1/images/edits', [
+                    'model'  => 'gpt-image-1',
+                    'prompt' => $prompt,
+                    'n'      => 1,
+                ]);
+
+            if (!$response->successful()) {
+                \Log::warning('OpenAI image edit error', ['status' => $response->status(), 'body' => $response->body()]);
+                return null;
+            }
+
+            $b64 = $response->json('data.0.b64_json');
+            if (!$b64) return null;
+
+            $path = 'imagenes/' . uniqid('anotada_', true) . '.png';
+            \Storage::disk('public')->put($path, base64_decode($b64));
+            return $path;
+        } catch (\Throwable $e) {
+            \Log::error('OpenAI image edit exception', ['error' => $e->getMessage()]);
+            return null;
         }
     }
 
@@ -203,23 +299,23 @@ EOT;
     public function storeResultados(Request $request)
     {
         $request->validate([
-            'imagen'         => 'required|string',
+            'imagen_path'    => 'required|string',
             'humana_score'   => 'nullable|integer|min:0|max:100',
             'angulo_menique' => 'nullable|numeric',
         ]);
 
-        $imagenB64 = $request->imagen;
-        $rawB64    = preg_replace('/^data:image\/[a-z]+;base64,/', '', $imagenB64);
-        $decoded   = base64_decode($rawB64);
-        abort_if($decoded === false, 422, 'Imagen inválida.');
-
-        $filename = 'imagenes/' . uniqid('cam_', true) . '.jpg';
-        \Storage::disk('public')->put($filename, $decoded);
+        $imagenPath = $request->imagen_path;
+        // Seguridad: solo rutas bajo imagenes/
+        abort_unless(
+            str_starts_with($imagenPath, 'imagenes/') && !str_contains($imagenPath, '..'),
+            422, 'Ruta inválida.'
+        );
+        abort_unless(\Storage::disk('public')->exists($imagenPath), 422, 'Imagen no encontrada.');
 
         $anguloMenique = $request->angulo_menique !== null ? min(20.0, (float) $request->angulo_menique) : null;
 
         session([
-            'imagen_ruta'    => $filename,
+            'imagen_ruta'    => $imagenPath,
             'humana_score'   => $request->humana_score,
             'angulo_menique' => $anguloMenique,
         ]);
