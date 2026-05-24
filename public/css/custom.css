@@ -253,20 +253,6 @@ body {
   z-index: 1;
   background: white;
 }
-#btn-capturar {
-  width: 100%;
-  padding: 16px;
-  background: #e31837;
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  font-size: 1.05rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-#btn-capturar:active { transform: scale(0.97); }
-
 /* Análisis */
 #paso-analisis {
   display: none;
@@ -469,3 +455,30 @@ body {
   margin-bottom: 4px;
 }
 #dev-upload { width: 100%; font-size: 0.8rem; }
+.head-left {
+  min-height:480px;
+}
+@media (max-width: 992px) {
+  .logo-block {
+    text-align: center !important;
+  }
+  .hero-hand {
+    width: 80%;
+    margin-top: -120px;
+  }
+  .dedo-grafico {
+    width: 100%;
+    height: auto;
+  }
+  .head-left {
+    min-height: 200px;
+  }
+  .hide-mobile {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  .carga-body .btn-cta {
+    min-width: 200px;
+  }
+}

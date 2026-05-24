@@ -4,23 +4,14 @@
   <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
   <section class="hero">
     <div class="container-fluid h-100 px-0">
-      <div class="row g-0 align-items-center" style="min-height:480px;">
-
-        <!-- LEFT – hand photo -->
-        <div class="col-6 position-relative" style="min-height:480px;">
-          <div class="hero-hand">
-            <img src="{{ asset('/img/dedo-grafico.png') }}" alt="Mano" class="dedo-grafico">
-          </div>
-        </div>
+      <div class="row g-0 align-items-center" style="flex-direction: row-reverse;">
 
         <!-- RIGHT – logo + tagline -->
-        <div class="col-6 d-flex flex-column justify-content-center align-items-end pe-4 pe-md-5" style="min-height:480px;">
+        <div class="col-lg-6 pe-4 pe-lg-5">
 
           <!-- Logo -->
           <div class="logo-block text-end mb-3">
-            <div class="d-flex align-items-center justify-content-end gap-2">
-              <img src="{{ asset('/img/logo.png') }}" alt="Puño" class="logo">
-            </div>
+            <img src="{{ asset('/img/logo.png') }}" alt="Puño" class="logo">
           </div>
 
           <!-- Tagline -->
@@ -28,6 +19,13 @@
             ¡Tu dedo<br>tiene algo<br>que decirte!
           </p>
 
+        </div>
+
+        <!-- LEFT – hand photo -->
+        <div class="col-lg-6 position-relative head-left">
+          <div class="hero-hand">
+            <img src="{{ asset('/img/dedo-grafico.png') }}" alt="Mano" class="dedo-grafico">
+          </div>
         </div>
       </div>
     </div>
@@ -45,7 +43,7 @@
         </div>
 
         <!-- Texto central -->
-        <div class="col-12 col-md-6 py-3">
+        <div class="col-6 py-3">
           <p class="analizar-title">
             Vamos a analizar<br>
             cómo el peso de tú<br>
@@ -54,7 +52,7 @@
         </div>
 
         <!-- Ilustración derecha -->
-        <div class="col-auto">
+        <div class="col-auto hide-mobile">
           <img src="{{ asset('/img/imagen2.png') }}" alt="Celular en mano" style="width:130px;">
         </div>
 

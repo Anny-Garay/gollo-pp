@@ -7,16 +7,14 @@
       <div class="row g-0 align-items-center">
 
         <!-- LEFT – hand photo -->
-        <div class="col-6 position-relative"></div>
+        <div class="col-lg-6 position-relative"></div>
 
         <!-- RIGHT – logo + tagline -->
-        <div class="col-6 d-flex flex-column justify-content-center align-items-end pe-4 pe-md-5">
+        <div class="col-lg-6 pe-4 pe-lg-5">
 
           <!-- Logo -->
           <div class="logo-block text-end mb-3">
-            <div class="d-flex align-items-center justify-content-end gap-2">
-              <img src="{{ asset('/img/logo.png') }}" alt="Puño" class="logo">
-            </div>
+            <img src="{{ asset('/img/logo.png') }}" alt="Puño" class="logo">
           </div>
 
         </div>
@@ -33,7 +31,7 @@
                 <video id="video" autoplay playsinline muted></video>
                 <img id="guia-mano" src="{{ asset('img/mano.png') }}" alt="Guía de mano">
             </div>
-            <button class="btn-cta">
+            <button class="btn-cta" id="btn-capturar">
               <span class="cta-arrows">»</span>
               &nbsp;Capturar&nbsp;
               <span class="cta-arrows">»</span>
