@@ -190,11 +190,13 @@ class WebController extends Controller
             : null;
 
         $prompt = <<<EOT
-Analiza esta imagen y responde ÚNICAMENTE con un objeto JSON válido, sin explicaciones ni markdown.
+CONCEPTO: "Phone Pinky" (o iPhone Pinky) es una deformación del dedo meñique causada por sostener frecuentemente un smartphone apoyándolo sobre ese dedo. Se manifiesta como una curvatura, hundimiento o desviación lateral visible del meñique, especialmente en la articulación interfalangial proximal (el nudo del medio), donde el dedo se dobla o cede hacia adentro por la presión prolongada del teléfono.
+
+Analiza la imagen de la mano y responde ÚNICAMENTE con un objeto JSON válido, sin explicaciones ni markdown.
 El JSON debe tener exactamente estos tres campos:
 {
   "humana_score": <entero del 0 al 100 indicando qué tan probable es que sea una mano humana real>,
-  "angulo_menique": <número decimal con el ángulo de inclinación del dedo meñique en grados respecto a la vertical (como en la imagen de referencia), o 0 si no se puede medir>,
+  "angulo_menique": <número decimal del 0 al 20 que representa el grado de curvatura/desviación lateral del meñique por Phone Pinky: mide el ángulo de desviacón lateral del segmento distal respecto al eje recto del dedo; 0 significa dedo perfectamente recto, valores mayores indican mayor curvatura; usa la imagen de referencia como guía de cómo se ve la curvatura>,
   "solo_menique": <true si hay exactamente un dedo extendido y los demás están doblados en puño, false si hay 0 o 2+ dedos extendidos>
 }
 EOT;
@@ -251,14 +253,15 @@ EOT;
 
         $anguloStr = number_format($angulo, 1);
 
-        $prompt = "This hand photo shows a fist with only the pinky finger extended. "
-            . "Add a clean technical angle-measurement overlay: "
-            . "(1) draw a thin vertical white reference line along the full length of the pinky finger; "
-            . "(2) on the left side add evenly-spaced horizontal white lines labeled 0, 20, 40, 60, 80, 100 from bottom to top; "
-            . "(3) draw a yellow dashed diagonal line at {$anguloStr} degrees from vertical along the pinky to show its inclination; "
-            . "(4) label '{$anguloStr}\u00b0' in bold yellow near the dashed line. "
+        $prompt = "This hand photo shows a fist with only the pinky finger extended, used to measure 'Phone Pinky' — a lateral curvature or indentation of the pinky caused by frequently holding a smartphone resting on that finger. "
+            . "The measurement value is {$anguloStr} degrees of lateral deviation at the proximal interphalangeal joint (the middle knuckle of the pinky). "
+            . "Add a clean technical measurement overlay to visualize this curvature: "
+            . "(1) draw a straight white dashed reference line along the base axis of the pinky (how the finger would look if perfectly straight); "
+            . "(2) draw a yellow solid line following the actual curved/deviated path of the pinky; "
+            . "(3) mark the angle between the two lines at the point of maximum deviation with an arc and the label '{$anguloStr}\u00b0' in bold yellow; "
+            . "(4) on the left side add a small vertical scale labeled 0 at the bottom and 20 at the top. "
             . "Keep the original hand photo fully visible beneath the overlay. "
-            . "Match the style of a scientific measurement diagram similar to the reference.";
+            . "Match the style of a scientific angle-measurement diagram.";
 
         try {
             $response = Http::withToken($apiKey)
