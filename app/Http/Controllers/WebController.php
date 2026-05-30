@@ -87,43 +87,6 @@ class WebController extends Controller
         ]);
     }
 
-    /**
-     * Paso 2: recibe la ruta temporal y el ángulo, genera la imagen anotada
-     * y devuelve la ruta definitiva en storage. Sin payloads de base64.
-     */
-    public function generarAnotada(Request $request)
-    {
-        $request->validate([
-            'imagen_temp'    => 'required|string',
-            'angulo_menique' => 'required|numeric',
-        ]);
-
-        $imagenTemp = $request->imagen_temp;
-
-        // Seguridad: solo rutas bajo imagenes/temp/
-        abort_unless(
-            str_starts_with($imagenTemp, 'imagenes/temp/') && !str_contains($imagenTemp, '..'),
-            422, 'Ruta inválida.'
-        );
-        abort_unless(\Storage::disk('public')->exists($imagenTemp), 404, 'Imagen temporal no encontrada.');
-
-        $bytes  = \Storage::disk('public')->get($imagenTemp);
-        $angulo = min(20.0, (float) $request->angulo_menique);
-
-        $imagenAnotadaPath = $this->generarImagenAnotadaDesdeBytes($bytes, $angulo);
-
-        if ($imagenAnotadaPath) {
-            // Anotación exitosa: borrar temporal
-            \Storage::disk('public')->delete($imagenTemp);
-            return response()->json(['imagen_path' => $imagenAnotadaPath]);
-        }
-
-        // Falló la anotación: mover la temporal como imagen definitiva
-        $finalPath = 'imagenes/' . uniqid('cam_', true) . '.jpg';
-        \Storage::disk('public')->move($imagenTemp, $finalPath);
-        return response()->json(['imagen_path' => $finalPath]);
-    }
-
     public function storeImagen(Request $request)
     {
         $request->validate([
@@ -181,7 +144,7 @@ class WebController extends Controller
     {
         $apiKey = config('services.openai.key');
         if (!$apiKey) {
-            return [null, null, null, null];
+            return [null, null, null];
         }
 
         $dedo_path = public_path('dedo-grafico.png');
@@ -219,7 +182,7 @@ EOT;
 
             if (!$response->successful()) {
                 \Log::warning('OpenAI API error', ['status' => $response->status(), 'body' => $response->body()]);
-                return [null, null, null, null];
+                return [null, null, null];
             }
 
             $raw  = $response->json('choices.0.message.content', '');
@@ -228,7 +191,7 @@ EOT;
 
             if (!is_array($data)) {
                 \Log::warning('OpenAI respuesta no parseable', ['content' => $raw]);
-                return [null, null, null, null];
+                return [null, null, null];
             }
 
             $humanaScore   = isset($data['humana_score'])   ? (int)   $data['humana_score']   : null;
@@ -242,83 +205,34 @@ EOT;
         }
     }
 
-    /**
-     * Llama a gpt-image-1 (images/edits) con los bytes crudos de la imagen,
-     * guarda el resultado en storage y devuelve la ruta, o null si falla.
-     */
-    private function generarImagenAnotadaDesdeBytes(string $bytes, float $angulo): ?string
-    {
-        $apiKey = config('services.openai.key');
-        if (!$apiKey) return null;
-
-        $anguloStr = number_format($angulo, 1);
-
-        $prompt = "This hand photo shows a fist with only the pinky finger extended, used to measure 'Phone Pinky' — a lateral curvature or indentation of the pinky caused by frequently holding a smartphone resting on that finger. "
-            . "The measurement value is {$anguloStr} degrees of lateral deviation at the proximal interphalangeal joint (the middle knuckle of the pinky). "
-            . "Add a clean technical measurement overlay to visualize this curvature: "
-            . "(1) draw a straight white dashed reference line along the base axis of the pinky (how the finger would look if perfectly straight); "
-            . "(2) draw a yellow solid line following the actual curved/deviated path of the pinky; "
-            . "(3) mark the angle between the two lines at the point of maximum deviation with an arc and the label '{$anguloStr}\u00b0' in bold yellow; "
-            . "(4) on the left side add a small vertical scale labeled 0 at the bottom and 20 at the top. "
-            . "Keep the original hand photo fully visible beneath the overlay. "
-            . "Match the style of a scientific angle-measurement diagram.";
-
-        try {
-            $response = Http::withToken($apiKey)
-                ->timeout(90)
-                ->attach('image[]', $bytes, 'hand.jpg', ['Content-Type' => 'image/jpeg'])
-                ->post('https://api.openai.com/v1/images/edits', [
-                    'model'  => 'gpt-image-1',
-                    'prompt' => $prompt,
-                    'n'      => 1,
-                ]);
-
-            if (!$response->successful()) {
-                \Log::warning('OpenAI image edit error', ['status' => $response->status(), 'body' => $response->body()]);
-                return null;
-            }
-
-            $b64 = $response->json('data.0.b64_json');
-            if (!$b64) return null;
-
-            $path = 'imagenes/' . uniqid('anotada_', true) . '.png';
-            \Storage::disk('public')->put($path, base64_decode($b64));
-            return $path;
-        } catch (\Throwable $e) {
-            \Log::error('OpenAI image edit exception', ['error' => $e->getMessage()]);
-            return null;
-        }
-    }
-
     public function resultado()
     {
         return view('resultado', [
             'humana_score'   => session('humana_score'),
             'angulo_menique' => session('angulo_menique'),
-            'imagen_ruta'    => session('imagen_ruta'),
         ]);
     }
 
     public function storeResultados(Request $request)
     {
         $request->validate([
-            'imagen_path'    => 'required|string',
+            'imagen_temp'    => 'required|string',
             'humana_score'   => 'nullable|integer|min:0|max:100',
             'angulo_menique' => 'nullable|numeric',
         ]);
 
-        $imagenPath = $request->imagen_path;
-        // Seguridad: solo rutas bajo imagenes/
+        $imagenTemp = $request->imagen_temp;
+        // Seguridad: solo rutas bajo imagenes/temp/
         abort_unless(
-            str_starts_with($imagenPath, 'imagenes/') && !str_contains($imagenPath, '..'),
+            str_starts_with($imagenTemp, 'imagenes/temp/') && !str_contains($imagenTemp, '..'),
             422, 'Ruta inválida.'
         );
-        abort_unless(\Storage::disk('public')->exists($imagenPath), 422, 'Imagen no encontrada.');
+        abort_unless(\Storage::disk('public')->exists($imagenTemp), 422, 'Imagen no encontrada.');
 
         $anguloMenique = $request->angulo_menique !== null ? min(20.0, (float) $request->angulo_menique) : null;
 
         session([
-            'imagen_ruta'    => $imagenPath,
+            'imagen_temp'    => $imagenTemp,
             'humana_score'   => $request->humana_score,
             'angulo_menique' => $anguloMenique,
         ]);
@@ -331,7 +245,6 @@ EOT;
         return view('resultado', [
             'humana_score'   => session('humana_score'),
             'angulo_menique' => session('angulo_menique'),
-            'imagen_ruta'    => session('imagen_ruta'),
         ]);
     }
 
@@ -344,7 +257,19 @@ EOT;
             'email'   => 'required|email|max:255',
         ]);
 
-        $imagenRuta    = session('imagen_ruta');
+        $imagenTemp = session('imagen_temp');
+        $imagenRuta = null;
+
+        if (
+            is_string($imagenTemp)
+            && str_starts_with($imagenTemp, 'imagenes/temp/')
+            && !str_contains($imagenTemp, '..')
+            && \Storage::disk('public')->exists($imagenTemp)
+        ) {
+            $imagenRuta = 'imagenes/' . uniqid('cam_', true) . '.jpg';
+            \Storage::disk('public')->move($imagenTemp, $imagenRuta);
+        }
+
         $humanaScore   = $request->input('humana_score')   ?? session('humana_score');
         $anguloMenique = $request->input('angulo_menique') ?? session('angulo_menique');
 
@@ -358,7 +283,7 @@ EOT;
             'angulo_menique' => $anguloMenique,
         ]);
 
-        session()->forget(['imagen_ruta', 'humana_score', 'angulo_menique']);
+        session()->forget(['imagen_temp', 'humana_score', 'angulo_menique']);
 
         $docNumber = 'PP-' . strtoupper(substr(md5($request->cedula . now()->timestamp), 0, 8));
 

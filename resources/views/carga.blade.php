@@ -91,7 +91,7 @@
         {{-- ── Form oculto → POST /resultados ── --}}
         <form id="form-resultados" method="POST" action="{{ route('resultados.store') }}">
             @csrf
-            <input type="hidden" id="fi-imagen-path" name="imagen_path">
+            <input type="hidden" id="fi-imagen-temp" name="imagen_temp">
             <input type="hidden" id="fi-humana"       name="humana_score">
             <input type="hidden" id="fi-angulo"       name="angulo_menique">
         </form>
@@ -111,7 +111,6 @@
       let aiAngulo         = null;
       let aiSoloMenique    = null;
       let aiImagenTemp     = null;   // ruta temporal en storage (del paso 1)
-      let aiImagenPath     = null;   // ruta definitiva anotada (del paso 2)
       let currentPct       = 0;
       let progressInterval = null;
 
@@ -171,7 +170,7 @@
       }
 
       function submitResultados() {
-          document.getElementById('fi-imagen-path').value = aiImagenPath || aiImagenTemp || '';
+          document.getElementById('fi-imagen-temp').value = aiImagenTemp || '';
           document.getElementById('fi-humana').value      = aiScore  !== null ? aiScore  : '';
           document.getElementById('fi-angulo').value      = aiAngulo !== null ? aiAngulo : '';
           document.getElementById('form-resultados').submit();
@@ -184,7 +183,6 @@
           aiAngulo        = null;
           aiSoloMenique   = null;
           aiImagenTemp    = null;
-          aiImagenPath    = null;
           currentPct      = 0;
           setBar(0);
           pasoAnalisis.style.display = 'none';
@@ -254,21 +252,6 @@
                   resetCaptura();
               }, 500);
               return;
-          }
-
-          // ── PASO 2: generar imagen anotada (gpt-image-1) ───────────────────
-          if (aiImagenTemp && aiAngulo !== null) {
-              try {
-                  const resp2 = await fetch('{{ route("generar.anotada") }}', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-                      body: JSON.stringify({ imagen_temp: aiImagenTemp, angulo_menique: aiAngulo }),
-                  });
-                  const data2 = await resp2.json();
-                  aiImagenPath = data2.imagen_path ?? null;
-              } catch (e) {
-                  aiImagenPath = null;
-              }
           }
 
           aiDone = true;

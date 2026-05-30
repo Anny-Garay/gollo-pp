@@ -19,34 +19,10 @@
             font-family: Arial, Helvetica, sans-serif;
         }
 
-        /* ── Photo strip ── */
-        .res-photo-wrap {
-            position: relative;
-            width: 100%;
-            height: 38vh;
-            min-height: 190px;
-            max-height: 280px;
-            overflow: hidden;
-            background: #1a1a2e;
-        }
-        .res-hand-photo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .res-photo-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 56px;
+        .res-top-actions {
+            padding: 14px 13px 0;
         }
         .res-back-btn {
-            position: absolute;
-            top: 14px;
-            left: 14px;
             width: 36px;
             height: 36px;
             background: rgba(0,0,0,0.45);
@@ -57,21 +33,10 @@
             text-decoration: none;
             z-index: 5;
         }
-        .res-angle-badge {
-            position: absolute;
-            bottom: 14px;
-            right: 14px;
-            background: rgba(227,24,55,0.88);
-            color: #fff;
-            font-size: 18px;
-            font-weight: 900;
-            padding: 4px 14px;
-            border-radius: 20px;
-        }
 
         /* ── Cards area ── */
         .res-content {
-            padding: 13px 13px 32px;
+            padding: 10px 13px 32px;
             display: flex;
             flex-direction: column;
             gap: 11px;
@@ -268,21 +233,12 @@
 
 <div class="res-page">
 
-    {{-- ── TOP PHOTO ── --}}
-    <div class="res-photo-wrap">
-        @if($imagen_ruta)
-            <img class="res-hand-photo" src="{{ route('img', $imagen_ruta) }}" alt="Tu mano">
-        @else
-            <div class="res-photo-placeholder">✋</div>
-        @endif
+    <div class="res-top-actions">
         <a href="{{ route('carga') }}" class="res-back-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M15 19l-7-7 7-7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </a>
-        @if($angulo_menique !== null)
-            <div class="res-angle-badge">{{ $anguloDisplay }}°</div>
-        @endif
     </div>
 
     <div class="res-content">
