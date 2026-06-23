@@ -45,9 +45,10 @@
         <!-- Texto central -->
         <div class="col-6 py-3">
           <p class="analizar-title">
-            Vamos a analizar<br>
-            cómo el peso de tú<br>
-            cel marca tu mano
+            Ahora podés recibir un<br>
+            descuento dependiendo<br>
+            de qué tan doblado tenés<br>
+            el meñique
           </p>
         </div>
 
@@ -74,8 +75,8 @@
         <!-- Badge 2 -->
         <div class="badge-card">
           <img src="{{ asset('/img/icono2.png') }}" alt="IA real" class="badge-icon">
-          <span class="badge-label">Totalmente</span>
-          <span class="badge-sub">Gratis</span>
+          <span class="badge-label">Descuento</span>
+          <span class="badge-sub">Asegurado</span>
         </div>
 
         <!-- Badge 3 -->
@@ -96,16 +97,16 @@
     <div class="container">
 
       <p class="footer-text">
-        Si tu meñique ya se puso en 'modo descanso', te<br>
-        damos un documento de canje oficial para que<br>
-        estrenés un celular más liviano y moderno en Gollo.
+        Si tenés el meñique torcido por tu celular,<br>
+        te damos un descuento dependiendo de<br>
+        qué tanto lo tenés doblado para que<br>
+        estrenés un celular más liviano y moderno<br>
+        de Gollo.
       </p>
 
       <div class="text-center mt-5">
         <a href="{{ route('carga') }}" class="btn-cta">
-          <span class="cta-arrows">»</span>
-          &nbsp;¡Darle viaje!&nbsp;
-          <span class="cta-arrows">»</span>
+          ¡Vamos!
         </a>
       </div>
 

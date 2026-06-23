@@ -321,7 +321,7 @@
                 <span class="form-card-head-icon">🛡️</span>
                 <div class="form-card-head-text">
                     <strong>Datos para tu documento</strong>
-                    <small>Llenar para hacer la vuelta 📝</small>
+                    <small>Llená para recibir tu descuento</small>
                 </div>
             </div>
 
@@ -349,8 +349,7 @@
                 </div>
                 <div class="form-field">
                     <label class="form-field-label" for="cedula">
-                        Número de Cédula *
-                        <span class="badge-formato">(formato tico)</span>
+                        Número de Cédula o DIMEX *
                     </label>
                     <input type="text" id="cedula" name="cedula"
                            value="{{ old('cedula') }}"
@@ -372,9 +371,9 @@
                            required autocomplete="email">
                 </div>
 
-                <button type="submit" class="btn-guardar">Obtener mi Documento de canje</button>
+                <button type="submit" class="btn-guardar">Obtener mi descuento</button>
             </form>
-            <sub>Solo usamos tus datos para generar el documento 🔒</sub>
+            <sub>Solo usamos tus datos para generar el descuento</sub>
         </div>
 
         <div class="step-dots">

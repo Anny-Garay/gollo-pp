@@ -32,9 +32,7 @@
                 <img id="guia-mano" src="{{ asset('img/mano.png') }}" alt="Guía de mano">
             </div>
             <button class="btn-cta" id="btn-capturar">
-              <span class="cta-arrows">»</span>
-              &nbsp;Capturar&nbsp;
-              <span class="cta-arrows">»</span>
+              ¡Captura la foto!
             </button>
             @if(request()->query('web') == '1')
             <div id="dev-upload-wrap">
@@ -49,7 +47,7 @@
             <img id="scan-foto" src="" alt="" class="scan-foto-bg">
             <div class="scan-overlay">
                 <div class="scan-badge-wrap">
-                    <span class="scan-badge">IA ESCANEANDO</span>
+                    <span class="scan-badge">IA SCANNER</span>
                 </div>
                 <div class="scan-frame">
                     <span class="cbr"></span>
@@ -69,14 +67,14 @@
                     </div>
                     <div class="scan-bar-wrap">
                         <div class="scan-bar-labels">
-                            <span class="scan-bar-brand">Phone Pinky™ AI v2.1</span>
+                            <span class="scan-bar-brand">Pinky Promos AI v2.1</span>
                             <span class="scan-bar-pct" id="scan-pct">0%</span>
                         </div>
                         <div class="scan-bar-track">
                             <div class="scan-bar-fill" id="scan-bar"></div>
                         </div>
                     </div>
-                    <p class="scan-msg">Aguantá un toque, la IA está<br>midiendo tu dedo...</p>
+                    <p class="scan-msg">La IA está midiendo tu dedo,<br>danos un momento.</p>
                     <div class="step-dots">
                         <span class="step-dot"></span>
                         <span class="step-dot step-dot--active"></span>
@@ -248,7 +246,7 @@
           if (aiScore !== null && aiScore < 40) {
               clearInterval(progressInterval); progressInterval = null;
               setTimeout(() => {
-                  alert('Necesitamos una foto más nítida de tu mano real. Por favor intentá de nuevo en buena iluminación 📸');
+                  alert('Necesitamos una foto más nítida de tu mano real. Por favor intentá de nuevo en buena iluminación.');
                   resetCaptura();
               }, 500);
               return;

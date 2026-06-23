@@ -414,8 +414,8 @@
                 <path d="M5 13l4 4L19 7" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
-        <h1>¡Listo, compa!</h1>
-        <p>Tu Documento de canje está ready 🎉</p>
+        <h1>¡Solo bueno!</h1>
+        <p>Tu Pinky Promo está lista para ser canjeada</p>
     </div>
 
     {{-- ── DOCUMENT CARD ── --}}
