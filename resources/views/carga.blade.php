@@ -44,45 +44,76 @@
 
         {{-- ── PASO 2: Animación análisis ── --}}
         <div id="paso-analisis">
-            <img id="scan-foto" src="" alt="" class="scan-foto-bg">
-            <div class="scan-overlay">
-                <div class="scan-badge-wrap">
-                    <span class="scan-badge">IA SCANNER</span>
+            <div class="scan-module">
+
+                <!-- fondo -->
+                <img class="scan-grid" src="{{ asset('img/scan/Recurso_4.png') }}" alt="">
+                <div class="scan-vignette"></div>
+
+                <!-- marcos -->
+                <img class="frame-top"    src="{{ asset('img/scan/Recurso_2.png') }}" alt="">
+                <img class="frame-bottom" src="{{ asset('img/scan/Recurso_3.png') }}" alt="">
+
+                <!-- badge -->
+                <div class="scan-header">
+                    <span class="scan-dash"></span>
+                    <span class="scan-badge">Escaneando ...</span>
+                    <span class="scan-dash"></span>
                 </div>
-                <div class="scan-frame">
-                    <span class="cbr"></span>
-                    <span class="cbl"></span>
+
+                <!-- 3 loaders superiores -->
+                <div class="loader-row top">
+                    <img class="loader" src="{{ asset('img/scan/Recurso_13.png') }}" alt="">
+                    <img class="loader" src="{{ asset('img/scan/Recurso_13.png') }}" alt="">
+                    <img class="loader" src="{{ asset('img/scan/Recurso_13.png') }}" alt="">
                 </div>
-                <div class="scan-line"></div>
-                <div class="scan-cursor"></div>
-                <div class="scan-dot"></div>
-                <div class="scan-dot"></div>
-                <div class="scan-dot"></div>
-                <div class="scan-dot"></div>
-                <div class="scan-dot"></div>
-                <div class="scan-bottom">
-                    <div class="scan-status">
-                        <span class="status-dot"></span>
-                        <span>Detectando meñique...</span>
-                    </div>
-                    <div class="scan-bar-wrap">
-                        <div class="scan-bar-labels">
-                            <span class="scan-bar-brand">Pinky Promos AI v2.1</span>
-                            <span class="scan-bar-pct" id="scan-pct">0%</span>
+
+                <!-- zona central: foto capturada + línea de escaneo + puntos -->
+                <div class="scan-stage">
+                    <img id="scan-foto" src="" alt="" class="scan-hand">
+                    <img class="scan-line" src="{{ asset('img/scan/Recurso_16.png') }}" alt="">
+                    <div class="scan-dot"></div>
+                    <div class="scan-dot"></div>
+                    <div class="scan-dot"></div>
+                    <div class="scan-dot"></div>
+                    <div class="scan-dot"></div>
+                </div>
+
+                <!-- footer: barras + loaders + track + progreso funcional -->
+                <div class="scan-footer">
+                    <img class="bars bars-left" src="{{ asset('img/scan/Recurso_8.png') }}" alt="">
+
+                    <div class="footer-center">
+                        <div class="footer-loaders">
+                            <div class="loader-group">
+                                <img class="loader" src="{{ asset('img/scan/Recurso_13.png') }}" alt="">
+                                <img class="loader" src="{{ asset('img/scan/Recurso_13.png') }}" alt="">
+                                <img class="loader" src="{{ asset('img/scan/Recurso_13.png') }}" alt="">
+                            </div>
+                            <div class="hazard-track"></div>
+                            <div class="loader-group">
+                                <img class="loader" src="{{ asset('img/scan/Recurso_13.png') }}" alt="">
+                                <img class="loader" src="{{ asset('img/scan/Recurso_13.png') }}" alt="">
+                                <img class="loader" src="{{ asset('img/scan/Recurso_13.png') }}" alt="">
+                            </div>
                         </div>
-                        <div class="scan-bar-track">
-                            <div class="scan-bar-fill" id="scan-bar"></div>
+
+                        <div class="scan-progress-module">
+                            <div class="scan-bar-labels">
+                                <span class="scan-bar-brand">Pinky Promos AI v2.1</span>
+                                <span class="scan-bar-pct" id="scan-pct">0%</span>
+                            </div>
+                            <div class="scan-bar-track">
+                                <div class="scan-bar-fill" id="scan-bar"></div>
+                            </div>
                         </div>
                     </div>
-                    <p class="scan-msg">La IA está midiendo tu dedo,<br>danos un momento.</p>
-                    <div class="step-dots">
-                        <span class="step-dot"></span>
-                        <span class="step-dot step-dot--active"></span>
-                        <span class="step-dot"></span>
-                        <span class="step-dot"></span>
-                        <span class="step-dot"></span>
-                    </div>
+
+                    <img class="bars bars-right" src="{{ asset('img/scan/Recurso_10.png') }}" alt="">
                 </div>
+
+                <img class="base-line" src="{{ asset('img/scan/Recurso_16.png') }}" alt="">
+
             </div>
         </div>
 
