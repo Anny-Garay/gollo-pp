@@ -4,21 +4,12 @@
   <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
   <section class="hero" style="min-height: initial;">
     <div class="container-fluid h-100 px-0">
-      <div class="row g-0 align-items-center">
 
-        <!-- LEFT – hand photo -->
-        <div class="col-lg-6 position-relative"></div>
-
-        <!-- RIGHT – logo + tagline -->
-        <div class="col-lg-6 pe-4 pe-lg-5">
-
-          <!-- Logo -->
-          <div class="logo-block text-end mb-3">
-            <img src="{{ asset('/img/logo.png') }}" alt="Puño" class="logo">
-          </div>
-
+        <!-- Logo -->
+        <div class="logo-block text-center mb-3">
+        <img src="{{ asset('/img/logo.png') }}" alt="Puño" class="logo">
         </div>
-      </div>
+
     </div>
   </section>
   

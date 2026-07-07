@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist+Pixel&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap');
 
 :root {
   --blue:   #004DB5;
@@ -10,7 +10,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: "Geist Pixel", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   background-color: var(--blue);
   color: var(--white);
   overflow-x: hidden;
@@ -34,7 +34,9 @@ body {
   object-fit: cover;
   object-position: right center;
 }
-
+.hero-hand img {
+  max-width: 700px;
+}
 /* placeholder box when image is missing */
 .img-placeholder {
   background: rgba(255,255,255,.12);
@@ -55,7 +57,7 @@ body {
 }
 
 .logo-pink {
-  font-family: "Geist Pixel", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: 900;
   font-size: clamp(3.5rem, 8vw, 6rem);
   line-height: 1;
@@ -65,7 +67,7 @@ body {
 }
 
 .logo-promos {
-  font-family: "Geist Pixel", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: 900;
   font-size: clamp(2rem, 5vw, 3.4rem);
   color: var(--yellow);
@@ -74,7 +76,7 @@ body {
 }
 
 .logo-gollo {
-  font-family: "Geist Pixel", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: 700;
   font-size: clamp(.9rem, 2vw, 1.3rem);
   color: var(--white);
@@ -90,7 +92,7 @@ body {
 }
 
 .tagline {
-  font-family: "Geist Pixel", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: 900;
   font-size: clamp(1.7rem, 4vw, 2.8rem);
   line-height: 1.15;
@@ -106,7 +108,7 @@ body {
 }
 
 .analizar-title {
-  font-family: "Geist Pixel", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: 900;
   font-size: clamp(1.6rem, 3.5vw, 2.4rem);
   line-height: 1.2;
@@ -149,7 +151,7 @@ body {
 }
 
 .badge-label {
-  font-family: "Geist Pixel", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: 800;
   font-size: .85rem;
   color: var(--yellow);
@@ -177,7 +179,7 @@ body {
 .btn-cta {
   background-color: var(--yellow);
   color: var(--blue2);
-  font-family: "Geist Pixel", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
   font-weight: 900;
   font-size: 1.15rem;
   border: none;
@@ -253,6 +255,12 @@ body {
   z-index: 1;
   background: white;
 }
+@media (min-width: 993px) {
+  #video,
+  #scan-foto {
+    transform: scaleX(-1);
+  }
+}
 /* Análisis */
 #paso-analisis {
   display: none;
@@ -275,7 +283,7 @@ body {
     radial-gradient(120% 90% at 50% 0%, var(--bg-dark-2) 0%, var(--bg-dark) 60%),
     var(--bg-dark);
   overflow: hidden;
-  font-family: "Geist Pixel", sans-serif;
+  font-family: "Space Grotesk", sans-serif;
 }
 
 /* grid de fondo */
@@ -581,9 +589,15 @@ body {
   .hide-mobile {
     display: none;
   }
+  .hero-hand img {
+    max-width: 480px;
+  }
 }
 @media (max-width: 480px) {
   .carga-body .btn-cta {
     min-width: 200px;
+  }
+  .section-analizar {
+    margin-top: -75px;
   }
 }

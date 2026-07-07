@@ -4,15 +4,16 @@
   <!-- ═══════════════════════════════ HERO ═══════════════════════════════ -->
   <section class="hero">
     <div class="container-fluid h-100 px-0">
+
+      <!-- Logo -->
+      <div class="logo-block text-center mb-3">
+        <img src="{{ asset('/img/logo.png') }}" alt="Puño" class="logo">
+      </div>
+
       <div class="row g-0 align-items-center" style="flex-direction: row-reverse;">
 
         <!-- RIGHT – logo + tagline -->
         <div class="col-lg-6 pe-4 pe-lg-5">
-
-          <!-- Logo -->
-          <div class="logo-block text-end mb-3">
-            <img src="{{ asset('/img/logo.png') }}" alt="Puño" class="logo">
-          </div>
 
           <!-- Tagline -->
           <p class="tagline text-end">
