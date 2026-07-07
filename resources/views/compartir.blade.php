@@ -113,8 +113,8 @@
         await navigator.share({
           files: [file],
           title: 'Pinky Promos',
-          text: 'Uff, ' + (document.getElementById('txt-nombre').textContent.replace('Uff, ','')) + ' no tiene su pinky tan torcido... ¡el mío está al ' + document.getElementById('txt-porcentaje').textContent + ' de torcido! Medí el tuyo en',
-          url: 'https://gollo.com/pinky',
+          text: '¡Mi pinky está al ' + document.getElementById('txt-porcentaje').textContent + ' de torcido! Mide el tuyo en',
+          url: '{{ url('/') }}',
         });
         setStatus('Compartido ✔');
       } else {
