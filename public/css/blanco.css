@@ -591,7 +591,6 @@ body {
     linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
   background-size: 22px 22px;
   overflow:hidden;
-  border-radius:6px;
   padding: 28px 22px 20px;
   box-sizing: border-box;
 }

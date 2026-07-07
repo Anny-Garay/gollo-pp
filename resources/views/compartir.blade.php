@@ -1,17 +1,25 @@
- <div id="compartir">
- 
-    <div class="logo-slot">
-      <!-- Logo del cliente: reemplazar src -->
-      <img src="img/logo.png" alt="Pinky Promos"
-            onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'img-placeholder',innerText:'LOGO\n(logo.png)'}))">
-    </div>
-    <div style="clear:both;"></div>
- 
-    <div class="compartir-titular">
-      <div class="titular-linea1" id="txt-nombre">Uff, {{ $nombre ?? 'Sofía' }}</div>
-      <div class="titular-linea2">No tiene su pinky</div>
-      <div class="titular-linea3">Tan torcido</div>
-    </div>
+@php
+    $anguloVal    = min(20.0, (float)($angulo_menique ?? $angulo ?? 0));
+    $nivelNum     = $anguloVal <= 4 ? 1 : ($anguloVal <= 8 ? 2 : ($anguloVal <= 12 ? 3 : ($anguloVal <= 16 ? 4 : 5)));
+    $nivelTitulos = [1 => 'Nivel 1 — Leve', 2 => 'Nivel 2 — Bajo', 3 => 'Nivel 3 — Moderado', 4 => 'Nivel 4 — Alto', 5 => 'Nivel 5 — Severo'];
+    $nivelCompleto = $nivelTitulos[$nivelNum];
+    $nivelParts = explode(' — ', $nivelCompleto);
+@endphp
+
+  <div id="compartir">
+  
+     <div class="logo-slot">
+       <!-- Logo del cliente: reemplazar src -->
+       <img src="img/logo.png" alt="Pinky Promos"
+             onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'img-placeholder',innerText:'LOGO\n(logo.png)'}))">
+     </div>
+     <div style="clear:both;"></div>
+  
+     <div class="compartir-titular">
+       <div class="titular-linea1" id="txt-nombre">Uff, {{ $nombre ?? 'Sofía' }}</div>
+       <div class="titular-linea2" id="txt-nivel-num">{{ $nivelParts[0] ?? 'Nivel 1' }}</div>
+       <div class="titular-linea3" id="txt-nivel-desc">{{ $nivelParts[1] ?? 'Leve' }}</div>
+     </div>
  
     <div class="compartir-media">
  
@@ -33,7 +41,7 @@
           "/>
         </svg>
         <div class="sello-texto">
-          <span class="sello-pct" id="txt-porcentaje">{{ $angulo_menique ?? 10 }}%</span>
+          <span class="sello-pct" id="txt-porcentaje">{{ round($anguloVal) }}%</span>
           <span class="sello-label">de torcido</span>
         </div>
       </div>
