@@ -585,7 +585,6 @@ body {
 #compartir{
   position:relative;
   width:100%;
-  aspect-ratio: 345 / 630;
   background-color:var(--blue);
   background-image:
     linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
@@ -764,36 +763,32 @@ body {
 
 /* ───── CTA ───── */
 .compartir-cta{
-  text-align:center;
-  margin-top:14px;
+  margin-top:24px;
+  font-size:30px;
+  font-weight:800;
+  font-family:"Space Grotesk", sans-serif;
+  text-transform:uppercase;
 }
 .cta-linea1{
-  font-family:"Space Grotesk", sans-serif;
-  font-weight:800;
-  font-size:clamp(13px, 3.8vw, 15px);
   color:var(--white);
   letter-spacing:.5px;
 }
 .cta-linea2{
-  font-family:"Space Grotesk", sans-serif;
-  font-weight:900;
-  font-size:clamp(20px, 6.5vw, 25px);
   color:var(--yellow);
   letter-spacing:-.3px;
+  text-align:center;
 }
 .cta-linea3{
-  font-family:"Space Grotesk", sans-serif;
-  font-weight:700;
-  font-size:clamp(11px, 3.2vw, 12.5px);
   color:var(--white);
   margin-top:1px;
+  text-align:right;
 }
 
 /* ───── Footer legal ───── */
 .compartir-footer{
   text-align:center;
-  margin-top:16px;
-  font-size:9px;
+  margin-top:24px;
+  font-size:20px;
   letter-spacing:2px;
   color:rgba(255,255,255,.75);
   font-weight:700;
@@ -806,6 +801,7 @@ body {
   flex-wrap:wrap;
   gap:10px;
   justify-content:center;
+  margin-top:20px;
 }
 
 .share-btn{

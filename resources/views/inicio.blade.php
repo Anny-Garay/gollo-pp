@@ -68,21 +68,21 @@
 
         <!-- Badge 1 -->
         <div class="badge-card">
-          <img src="{{ asset('/img/icono1.png') }}" alt="IA real" class="badge-icon">
+          <img src="{{ asset('/img/ico-robot.png') }}" alt="IA real" class="badge-icon">
           <span class="badge-label">IA real</span>
           <span class="badge-sub">Tecnología</span>
         </div>
 
         <!-- Badge 2 -->
         <div class="badge-card">
-          <img src="{{ asset('/img/icono2.png') }}" alt="IA real" class="badge-icon">
+          <img src="{{ asset('/img/ico-giftbox.png') }}" alt="IA real" class="badge-icon">
           <span class="badge-label">Descuento</span>
           <span class="badge-sub">Asegurado</span>
         </div>
 
         <!-- Badge 3 -->
         <div class="badge-card">
-          <img src="{{ asset('/img/icono3.png') }}" alt="IA real" class="badge-icon">
+          <img src="{{ asset('/img/ico-flash.png') }}" alt="IA real" class="badge-icon">
           <span class="badge-label">3 segundos</span>
           <span class="badge-sub">Diagnóstico</span>
         </div>
