@@ -825,6 +825,7 @@ body {
 .share-btn.x          { background:#000000; }
 .share-btn.download   { background:var(--blue2); }
 .share-btn.copy       { background:#5b6b7c; }
+.share-btn.share-native { background:#7c3aed; }
 
 .share-status{
   font-size:12px;

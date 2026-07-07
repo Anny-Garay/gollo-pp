@@ -58,11 +58,15 @@
  
   </div>
  
-  <!-- ══════════ BOTÓN DE DESCARGA ══════════ -->
+  <!-- ══════════ BOTONES ══════════ -->
   <div class="share-bar">
     <button class="share-btn download" id="btn-descargar-compartir">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v11.17l3.59-3.58L17 12l-5 5-5-5 1.41-1.41L11 14.17V3h1Zm7 16v2H5v-2h14Z"/></svg>
-      Descargar para compartir
+      Descargar imagen
+    </button>
+    <button class="share-btn share-native" id="btn-compartir-nativo">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16c-.79 0-1.5.31-2.03.81l-7.55-4.42c.03-.13.05-.26.05-.39s-.02-.26-.05-.39l7.55-4.42c.53.5 1.24.81 2.03.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .13.02.26.05.39l-7.55 4.42C7.5 10.31 6.79 10 6 10c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.03-.81l7.55 4.42c-.03.13-.05.26-.05.39 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
+      Compartir
     </button>
   </div>
 
@@ -76,14 +80,18 @@
     if (ms) setTimeout(() => { statusEl.textContent = ''; }, ms);
   }
 
+  async function generarImagen() {
+    return html2canvas(document.getElementById('compartir'), {
+      useCORS: true,
+      scale: 2,
+      backgroundColor: null,
+    });
+  }
+
   document.getElementById('btn-descargar-compartir').addEventListener('click', async () => {
     setStatus('Generando imagen...', 0);
     try {
-      const canvas = await html2canvas(document.getElementById('compartir'), {
-        useCORS: true,
-        scale: 2,
-        backgroundColor: null,
-      });
+      const canvas = await generarImagen();
       const link = document.createElement('a');
       link.download = 'pinky-promos.png';
       link.href = canvas.toDataURL('image/png');
@@ -91,6 +99,31 @@
       setStatus('Imagen descargada ✔');
     } catch (e) {
       setStatus('No se pudo generar la imagen (revisá CORS de las imágenes)');
+    }
+  });
+
+  document.getElementById('btn-compartir-nativo').addEventListener('click', async () => {
+    setStatus('Generando imagen...', 0);
+    try {
+      const canvas = await generarImagen();
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const file = new File([blob], 'pinky-promos.png', { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Pinky Promos',
+          text: 'Uff, ' + (document.getElementById('txt-nombre').textContent.replace('Uff, ','')) + ' no tiene su pinky tan torcido... ¡el mío está al ' + document.getElementById('txt-porcentaje').textContent + ' de torcido! Medí el tuyo en',
+          url: 'https://gollo.com/pinky',
+        });
+        setStatus('Compartido ✔');
+      } else {
+        setStatus('Compartir no disponible en este navegador. Usá "Descargar" y compartí manualmente.');
+      }
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        setStatus('No se pudo compartir');
+      }
     }
   });
 </script>
