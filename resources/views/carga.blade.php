@@ -114,6 +114,7 @@
             <input type="hidden" id="fi-imagen-temp" name="imagen_temp">
             <input type="hidden" id="fi-humana"       name="humana_score">
             <input type="hidden" id="fi-angulo"       name="angulo_menique">
+            <input type="hidden" id="fi-pinky-points" name="pinky_points">
         </form>
 
     </div>
@@ -130,6 +131,7 @@
       let aiScore          = null;
       let aiAngulo         = null;
       let aiSoloMenique    = null;
+      let aiPinkyPoints    = null;
       let aiImagenTemp     = null;   // ruta temporal en storage (del paso 1)
       let currentPct       = 0;
       let progressInterval = null;
@@ -193,6 +195,7 @@
           document.getElementById('fi-imagen-temp').value = aiImagenTemp || '';
           document.getElementById('fi-humana').value      = aiScore  !== null ? aiScore  : '';
           document.getElementById('fi-angulo').value      = aiAngulo !== null ? aiAngulo : '';
+          document.getElementById('fi-pinky-points').value = aiPinkyPoints ? JSON.stringify(aiPinkyPoints) : '';
           document.getElementById('form-resultados').submit();
       }
 
@@ -202,6 +205,7 @@
           aiScore         = null;
           aiAngulo        = null;
           aiSoloMenique   = null;
+          aiPinkyPoints   = null;
           aiImagenTemp    = null;
           currentPct      = 0;
           setBar(0);
@@ -249,9 +253,10 @@
               aiScore       = data.humana_score   ?? null;
               aiAngulo      = data.angulo_menique ?? null;
               aiSoloMenique = data.solo_menique   ?? null;
+              aiPinkyPoints = data.pinky_points   ?? null;
               aiImagenTemp  = data.imagen_temp    ?? null;
           } catch (e) {
-              aiScore = aiAngulo = aiSoloMenique = aiImagenTemp = null;
+              aiScore = aiAngulo = aiSoloMenique = aiImagenTemp = aiPinkyPoints = null;
           }
 
           // Validar: solo el meñique extendido

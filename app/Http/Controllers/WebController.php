@@ -77,12 +77,13 @@ class WebController extends Controller
         $imagenTemp = 'imagenes/temp/' . \Str::uuid() . '.jpg';
         \Storage::disk('public')->put($imagenTemp, $decoded);
 
-        [$humanaScore, $anguloMenique, $soloMenique] = $this->analizarImagenConIA($request->imagen);
+        [$humanaScore, $anguloMenique, $soloMenique, $pinkyPoints] = $this->analizarImagenConIA($request->imagen);
 
         return response()->json([
             'humana_score'   => $humanaScore,
             'angulo_menique' => $anguloMenique,
             'solo_menique'   => $soloMenique,
+            'pinky_points'   => $pinkyPoints,
             'imagen_temp'    => $imagenTemp,
         ]);
     }
@@ -137,14 +138,14 @@ class WebController extends Controller
 
     /**
      * Llama a OpenAI Vision (gpt-4o) para analizar la imagen y devuelve
-     * [humana_score, angulo_menique, solo_menique].
-     * Retorna [null, null, null] si la llamada falla.
+     * [humana_score, angulo_menique, solo_menique, pinky_points].
+     * Retorna [null, null, null, null] si la llamada falla.
      */
     private function analizarImagenConIA(string $imageDataUrl): array
     {
         $apiKey = config('services.openai.key');
         if (!$apiKey) {
-            return [null, null, null];
+            return [null, null, null, null];
         }
 
         $dedo_path = public_path('dedo-grafico.png');
@@ -153,22 +154,36 @@ class WebController extends Controller
             : null;
 
         $prompt = <<<EOT
-CONCEPTO: "Phone Pinky" (o iPhone Pinky) es una deformación del dedo meñique causada por sostener frecuentemente un smartphone apoyándolo sobre ese dedo. Se manifiesta como una curvatura, hundimiento o desviación lateral visible del meñique, especialmente en la articulación interfalangial proximal (el nudo del medio), donde el dedo se dobla o cede hacia adentro por la presión prolongada del teléfono.
+CONCEPTO: "Phone Pinky" (o iPhone Pinky) es una deformación del dedo meñique causada por sostener frecuentemente un smartphone apoyándolo sobre ese dedo. Se manifiesta como una curvatura o desviación lateral visible del meñique.
 
 Analiza la imagen de la mano y responde ÚNICAMENTE con un objeto JSON válido, sin explicaciones ni markdown.
-El JSON debe tener exactamente estos tres campos:
+
+El JSON debe tener estos campos:
 {
-  "humana_score": <entero del 0 al 100 indicando qué tan probable es que sea una mano humana real>,
-  "angulo_menique": <número decimal del 0 al 20 que representa el grado de curvatura/desviación lateral del meñique por Phone Pinky: mide el ángulo de desviacón lateral del segmento distal respecto al eje recto del dedo; 0 significa dedo perfectamente recto, valores mayores indican mayor curvatura; usa la imagen de referencia como guía de cómo se ve la curvatura>,
-  "solo_menique": <true si hay exactamente un dedo extendido y los demás están doblados en puño, false si hay 0 o 2+ dedos extendidos>
+  "humana_score": <entero 0-100: qué tan probable es que sea una mano humana real>,
+  "solo_menique": <true si solo el meñique está extendido y los demás doblados en puño>,
+  "pinky_points": [
+    {"x": 0-1000, "y": 0-1000},
+    {"x": 0-1000, "y": 0-1000},
+    {"x": 0-1000, "y": 0-1000},
+    {"x": 0-1000, "y": 0-1000}
+  ]
 }
+
+Los 4 puntos de pinky_points deben ser:
+1. Base del meñique (articulación MCP, donde el dedo se une a la palma)
+2. Articulación PIP (el nudo medio del meñique)
+3. Articulación DIP (el nudo cerca de la uña)
+4. Punta del meñique (extremo de la uña)
+
+IMPORTANTE: Usá coordenadas normalizadas 0-1000 donde (0,0) es esquina superior izquierda y (1000,1000) esquina inferior derecha de la imagen. Identificá con precisión anatómica cada punto.
 EOT;
 
         $content = [];
         if ($dedoB64) {
             $content[] = ['type' => 'image_url', 'image_url' => ['url' => $dedoB64, 'detail' => 'low']];
         }
-        $content[] = ['type' => 'image_url', 'image_url' => ['url' => $imageDataUrl, 'detail' => 'low']];
+        $content[] = ['type' => 'image_url', 'image_url' => ['url' => $imageDataUrl, 'detail' => 'high']];
         $content[] = ['type' => 'text', 'text' => $prompt];
 
         try {
@@ -176,13 +191,13 @@ EOT;
                 ->timeout(30)
                 ->post('https://api.openai.com/v1/chat/completions', [
                     'model'      => 'gpt-4o',
-                    'max_tokens' => 150,
+                    'max_tokens' => 500,
                     'messages'   => [['role' => 'user', 'content' => $content]],
                 ]);
 
             if (!$response->successful()) {
                 \Log::warning('OpenAI API error', ['status' => $response->status(), 'body' => $response->body()]);
-                return [null, null, null];
+                return [null, null, null, null];
             }
 
             $raw  = $response->json('choices.0.message.content', '');
@@ -191,18 +206,59 @@ EOT;
 
             if (!is_array($data)) {
                 \Log::warning('OpenAI respuesta no parseable', ['content' => $raw]);
-                return [null, null, null];
+                return [null, null, null, null];
             }
 
-            $humanaScore   = isset($data['humana_score'])   ? (int)   $data['humana_score']   : null;
-            $anguloMenique = isset($data['angulo_menique']) ? min(20.0, (float) $data['angulo_menique']) : null;
-            $soloMenique   = isset($data['solo_menique'])   ? (bool)  $data['solo_menique']   : null;
+            $humanaScore = isset($data['humana_score']) ? (int) $data['humana_score'] : null;
+            $soloMenique = isset($data['solo_menique']) ? (bool) $data['solo_menique'] : null;
+            $pinkyPoints = $data['pinky_points'] ?? null;
 
-            return [$humanaScore, $anguloMenique, $soloMenique];
+            $anguloMenique = null;
+            if (is_array($pinkyPoints) && count($pinkyPoints) >= 3) {
+                $anguloMenique = $this->calcularAnguloPinky($pinkyPoints);
+            }
+
+            return [$humanaScore, $anguloMenique, $soloMenique, $pinkyPoints];
         } catch (\Throwable $e) {
             \Log::error('OpenAI Vision exception', ['error' => $e->getMessage()]);
-            return [null, null, null];
+            return [null, null, null, null];
         }
+    }
+
+    /**
+     * Calcula el ángulo de desviación del meñique a partir de coordenadas normalizadas.
+     * Mide la desviación de las falanges PIP y DIP respecto a la línea recta base-punta.
+     * Ángulo = desviación máxima entre el segmento base→PIP y base→tip, o PIP→DIP y base→tip.
+     */
+    private function calcularAnguloPinky(array $points): float
+    {
+        $p0 = $points[0]; // base MCP
+        $p3 = $points[count($points) - 1]; // tip
+
+        $vRefx = (float) $p3['x'] - (float) $p0['x'];
+        $vRefy = (float) $p3['y'] - (float) $p0['y'];
+        $magRef = sqrt($vRefx * $vRefx + $vRefy * $vRefy);
+
+        if ($magRef < 0.001) return 0;
+
+        $maxAngle = 0.0;
+
+        // Medir desviación de cada punto intermedio respecto a la línea base→tip
+        for ($i = 1; $i < count($points) - 1; $i++) {
+            $vpx = (float) $points[$i]['x'] - (float) $p0['x'];
+            $vpy = (float) $points[$i]['y'] - (float) $p0['y'];
+
+            $dot   = $vpx * $vRefx + $vpy * $vRefy;
+            $magP  = sqrt($vpx * $vpx + $vpy * $vpy);
+            if ($magP < 0.001) continue;
+
+            $cosA = max(-1, min(1, $dot / ($magP * $magRef)));
+            $angle = rad2deg(acos($cosA));
+
+            if ($angle > $maxAngle) $maxAngle = $angle;
+        }
+
+        return min(20.0, round($maxAngle, 1));
     }
 
     public function resultado()
@@ -210,6 +266,8 @@ EOT;
         return view('resultado', [
             'humana_score'   => session('humana_score'),
             'angulo_menique' => session('angulo_menique'),
+            'pinky_points'   => session('pinky_points'),
+            'imagen_temp'    => session('imagen_temp'),
         ]);
     }
 
@@ -219,6 +277,7 @@ EOT;
             'imagen_temp'    => 'required|string',
             'humana_score'   => 'nullable|integer|min:0|max:100',
             'angulo_menique' => 'nullable|numeric',
+            'pinky_points'   => 'nullable|string',
         ]);
 
         $imagenTemp = $request->imagen_temp;
@@ -230,11 +289,13 @@ EOT;
         abort_unless(\Storage::disk('public')->exists($imagenTemp), 422, 'Imagen no encontrada.');
 
         $anguloMenique = $request->angulo_menique !== null ? min(20.0, (float) $request->angulo_menique) : null;
+        $pinkyPoints   = $request->pinky_points ? json_decode($request->pinky_points, true) : null;
 
         session([
             'imagen_temp'    => $imagenTemp,
             'humana_score'   => $request->humana_score,
             'angulo_menique' => $anguloMenique,
+            'pinky_points'   => $pinkyPoints,
         ]);
 
         return redirect()->route('resultados');
@@ -245,6 +306,8 @@ EOT;
         return view('resultado', [
             'humana_score'   => session('humana_score'),
             'angulo_menique' => session('angulo_menique'),
+            'pinky_points'   => session('pinky_points'),
+            'imagen_temp'    => session('imagen_temp'),
         ]);
     }
 

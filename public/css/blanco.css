@@ -65,6 +65,17 @@ body {
 .gauge-svg-wrap {
     padding: 8px 16px 0;
 }
+.trace-wrap {
+    padding: 12px;
+    display: flex;
+    justify-content: center;
+}
+#pinky-trace {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+}
 .gauge-angle-val {
     text-align: center;
     font-size: 46px;
@@ -832,4 +843,9 @@ body {
   color:#33404d;
   min-height:16px;
   text-align:center;
+}
+@media (min-width: 993px) {
+  #pinky-trace {
+    transform: scaleX(-1);
+  }
 }
