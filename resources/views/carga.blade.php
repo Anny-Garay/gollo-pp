@@ -20,7 +20,7 @@
         <div id="paso-camara" style="display:flex">
             <div class="camera-container">
                 <video id="video" autoplay playsinline muted></video>
-                <img id="guia-mano" src="{{ asset('img/scan/Recurso_6.png') }}" alt="Guía de mano">
+                <img id="guia-mano" src="{{ asset('img/scan/Recurso_6-2.png') }}" alt="Guía de mano">
             </div>
             <button class="btn-cta" id="btn-capturar">
               ¡Captura la foto!
