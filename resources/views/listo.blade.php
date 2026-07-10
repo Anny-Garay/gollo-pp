@@ -64,32 +64,6 @@
         <span class="step-dot"></span>
     </div>
 
-    {{-- ── PRODUCT CATALOG ── --}}
-    @if(isset($productos) && $productos->count())
-    <div style="height:20px;"></div>
-    <div class="catalogo-section">
-        <p class="catalogo-title">📱 Celulares recomendados para vos</p>
-        <div class="catalogo-grid">
-            @foreach($productos as $prod)
-            <div class="prod-card">
-                @if($prod->foto)
-                    <img class="prod-card-img" src="{{ asset('img/' . $prod->foto) }}" alt="{{ $prod->nombre }}">
-                @else
-                    <div class="prod-card-img-placeholder">📱</div>
-                @endif
-                <div class="prod-card-body">
-                    <p class="prod-card-name">{{ $prod->nombre }}</p>
-                    <p class="prod-card-price">₡{{ number_format($prod->precio, 0, ',', '.') }}</p>
-                    <a class="prod-card-btn" href="{{ $prod->link_externo }}" target="_blank" rel="noopener">
-                        Ver en Gollo →
-                    </a>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
-
 </div>
 
 @endsection

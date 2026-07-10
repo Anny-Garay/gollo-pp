@@ -5,27 +5,28 @@
 @php
     if (isset($_GET['dev'])) {
         $dayFactor      = max(1, (int)date('j'));
-        $fakeAngle      = 3.0 + ($dayFactor % 10) * 0.9;
+        $fakeAngle      = mt_rand(20, 100) / 10;
         $humana_score   = round(60 + ($dayFactor % 36), 1);
         $angulo_menique = $fakeAngle;
 
-        $bx = 200; $by = 380;
-        $px = 180; $py = 260;
-        $a2 = atan2($py - $by, $px - $bx);
-        $a1 = $a2 + deg2rad($fakeAngle);
-        $dt = 280;
-        $tx = $bx + $dt * cos($a1);
-        $ty = $by + $dt * sin($a1);
-        $dx = ($px + $tx) / 2;
-        $dy = ($py + $ty) / 2;
+        // Screen coordinates for 480×322 canvas (pad 50/30/30/30)
+        $by = 265;             // Y: 20% más abajo (centro + 2×20% de drawH)
+        $bx = 170;             // BASE X — centro del canvas
+        $tx = 440;             // TIP X — más pegado a la derecha
+        $ty = $by;             // TIP Y — misma altura que BASE
+        $px = 278;             // PIP X — 40% entre BASE y TIP
+        $py = $by + ($px - $bx) * tan(deg2rad($fakeAngle));
+        $dx = 359;             // DIP X — 70% entre BASE y TIP
+        $dy = $by + ($dx - $bx) * tan(deg2rad($fakeAngle));
 
         $pinky_points = [
             ['x' => $bx, 'y' => $by],
-            ['x' => $px, 'y' => $py],
+            ['x' => $px, 'y' => round($py, 2)],
             ['x' => round($dx, 2), 'y' => round($dy, 2)],
-            ['x' => round($tx, 2), 'y' => round($ty, 2)],
+            ['x' => $tx, 'y' => $ty],
         ];
     }
+    $isDev = isset($_GET['dev']);
 
     $angulo    = min(20.0, (float)($angulo_menique ?? 0));
     $maxGauge  = 20.0;
@@ -72,7 +73,7 @@
             <p class="diag-header">🏥 Resultado del diagnóstico</p>
             <div class="gauge-angle-val">{{ $anguloDisplay }}<sup>°</sup></div>
             <div class="trace-wrap">
-                <canvas id="pinky-trace" width="400" height="480"></canvas>
+                <canvas id="pinky-trace" width="480" height="322"></canvas>
             </div>
         </div>
         @endif
@@ -182,7 +183,7 @@
     var rangeX = maxX - minX || 1;
     var rangeY = maxY - minY || 1;
 
-    var padL = 70, padR = 40, padT = 60, padB = 70;
+    var padL = 50, padR = 30, padT = 30, padB = 30;
     var drawW = W - padL - padR;
     var drawH = H - padT - padB;
 
@@ -190,17 +191,36 @@
     var offX = padL + (drawW - rangeX * scale) / 2;
     var offY = padT + (drawH - rangeY * scale) / 2;
 
-    var pts = points.map(function(p) {
-      return {
-        x: offX + (p.x - minX) * scale,
-        y: offY + (p.y - minY) * scale
-      };
-    });
+    var pts;
+    if ({{ $isDev ? 'true' : 'false' }}) {
+      pts = points.map(function(p) { return { x: p.x, y: p.y }; });
+    } else {
+      var baseD = points[0], tipD = points[3];
+      var baseSx = padL + drawW * 0.3;
+      var baseSy = padT + drawH * 0.8;
+      var tipSx  = padL + drawW * 0.95;
+      var sX = (tipSx - baseSx) / (tipD.x - baseD.x || 1);
+      pts = points.map(function(p) {
+        return {
+          x: baseSx + (p.x - baseD.x) * sX,
+          y: baseSy + (p.y - baseD.y) * sX
+        };
+      });
+      // Forzar TIP a la misma altura que BASE
+      var yDiff = pts[3].y - pts[0].y;
+      pts[3].y = pts[0].y;
+      for (var i = 1; i < 3; i++) {
+        var t = (pts[i].x - pts[0].x) / (pts[3].x - pts[0].x);
+        pts[i].y -= yDiff * t;
+      }
+    }
 
     // ── Estáticos (se dibujan una vez) ──
-    var bg = '#0b1120';
-    var gridColor = 'rgba(0, 200, 255, 0.07)';
-    var neon = '#00e5ff';
+    var bg = '#004DB5';
+    var bgImg = new Image();
+    bgImg.src = '/img/dedo-grafico.png';
+    var gridColor = 'rgba(253, 216, 53, 0.07)';
+    var neon = '#fdd835';
     var accent = '#ff3366';
     var textDim = 'rgba(255,255,255,0.5)';
     var textBright = '#fff';
@@ -211,6 +231,7 @@
       // Fondo
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
+      ctx.drawImage(bgImg, 0, 0, W, H);
 
       // Grid
       ctx.strokeStyle = gridColor;
@@ -287,8 +308,8 @@
         var midA = (startA + endA) / 2;
         var labelX = cx + (arcR + 18) * Math.cos(midA);
         var labelY = cy + (arcR + 18) * Math.sin(midA);
-        ctx.fillStyle = accent;
-        ctx.font = 'bold 12px monospace';
+        ctx.fillStyle = textBright;
+        ctx.font = 'bold 16px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText(angleDeg.toFixed(1) + '°', labelX, labelY);
@@ -309,28 +330,19 @@
     }
 
     function drawTrace() {
-      // Línea del trazo — sutil, sin glow
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.4)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(253, 216, 53, 0.6)';
+      ctx.lineWidth = 3;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
+      ctx.setLineDash([8, 5]);
       ctx.beginPath();
       ctx.moveTo(pts[0].x, pts[0].y);
       for (var i = 1; i < pts.length; i++) {
         ctx.lineTo(pts[i].x, pts[i].y);
       }
       ctx.stroke();
-
-      // Segunda pasada para centro más claro
-      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(pts[0].x, pts[0].y);
-      for (var i = 1; i < pts.length; i++) {
-        ctx.lineTo(pts[i].x, pts[i].y);
-      }
-      ctx.stroke();
+      ctx.setLineDash([]);
     }
 
     function drawPoints(glow) {
@@ -341,9 +353,9 @@
         var baseGlowR = r + 6;
         var glowR = baseGlowR + glow * 10;
 
-        // ── Cian para BASE/PIP/DIP │ Rosado para TIP ──
+        // ── Amarillo para BASE/PIP/DIP │ Rosado para TIP ──
         var ptColor = isTip ? accent : neon;
-        var ptGlow = isTip ? 'rgba(255,51,102,' : 'rgba(0,229,255,';
+        var ptGlow = isTip ? 'rgba(255,51,102,' : 'rgba(253,216,53,';
         var ptGlowAlpha = (0.25 + glow * 0.45).toFixed(3);
 
         // Glow exterior pulsante
