@@ -845,7 +845,7 @@ body {
   text-align:center;
 }
 @media (min-width: 993px) {
-  #pinky-trace {
+  /*#pinky-trace {
     transform: scaleX(-1);
-  }
+  }*/
 }

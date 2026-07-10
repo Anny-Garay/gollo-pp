@@ -3,6 +3,30 @@
 @section('content')
 
 @php
+    if (isset($_GET['dev'])) {
+        $dayFactor      = max(1, (int)date('j'));
+        $fakeAngle      = 3.0 + ($dayFactor % 10) * 0.9;
+        $humana_score   = round(60 + ($dayFactor % 36), 1);
+        $angulo_menique = $fakeAngle;
+
+        $bx = 200; $by = 380;
+        $px = 180; $py = 260;
+        $a2 = atan2($py - $by, $px - $bx);
+        $a1 = $a2 + deg2rad($fakeAngle);
+        $dt = 280;
+        $tx = $bx + $dt * cos($a1);
+        $ty = $by + $dt * sin($a1);
+        $dx = ($px + $tx) / 2;
+        $dy = ($py + $ty) / 2;
+
+        $pinky_points = [
+            ['x' => $bx, 'y' => $by],
+            ['x' => $px, 'y' => $py],
+            ['x' => round($dx, 2), 'y' => round($dy, 2)],
+            ['x' => round($tx, 2), 'y' => round($ty, 2)],
+        ];
+    }
+
     $angulo    = min(20.0, (float)($angulo_menique ?? 0));
     $maxGauge  = 20.0;
     $ratio     = min(max($angulo / $maxGauge, 0.0), 1.0);
@@ -42,71 +66,11 @@
 
     <div class="res-content">
 
-        {{-- ── DIAGNOSTIC CARD ── --}}
-        <div class="res-card">
-            <p class="diag-header">🏥 Resultado del diagnóstico</p>
-
-            <div class="gauge-svg-wrap">
-                {{--
-                    SVG Gauge — center (110,115), radius 90
-                    5 segments each 36° of 180° sweep (CW in SVG = upper semicircle)
-                    Angles (standard math, CCW from right):
-                      180° → (20, 115)
-                      144° → (37.19, 62.08)
-                      108° → (82.19, 29.41)
-                       72° → (137.81, 29.41)
-                       36° → (182.81, 62.08)
-                        0° → (200, 115)
-                    Arc direction: sweep=1 (CW in SVG) traces the upper semicircle
-                --}}
-                <svg viewBox="0 0 220 120" width="100%" style="display:block;max-width:320px;margin:0 auto">
-                    {{-- Background track --}}
-                    <path d="M 20 115 A 90 90 0 0 1 200 115"
-                          stroke="#eeeeee" stroke-width="22" fill="none" stroke-linecap="round"/>
-                    {{-- Segment 1: green --}}
-                    <path d="M 20 115 A 90 90 0 0 1 37.19 62.08"
-                          stroke="#27ae60" stroke-width="18" fill="none" stroke-linecap="butt"/>
-                    {{-- Segment 2: lime --}}
-                    <path d="M 37.19 62.08 A 90 90 0 0 1 82.19 29.41"
-                          stroke="#8bc34a" stroke-width="18" fill="none" stroke-linecap="butt"/>
-                    {{-- Segment 3: yellow --}}
-                    <path d="M 82.19 29.41 A 90 90 0 0 1 137.81 29.41"
-                          stroke="#fdd835" stroke-width="18" fill="none" stroke-linecap="butt"/>
-                    {{-- Segment 4: orange --}}
-                    <path d="M 137.81 29.41 A 90 90 0 0 1 182.81 62.08"
-                          stroke="#f57c00" stroke-width="18" fill="none" stroke-linecap="butt"/>
-                    {{-- Segment 5: red --}}
-                    <path d="M 182.81 62.08 A 90 90 0 0 1 200 115"
-                          stroke="#e53935" stroke-width="18" fill="none" stroke-linecap="butt"/>
-
-                    {{-- Needle --}}
-                    <line x1="110" y1="115" x2="{{ $nx }}" y2="{{ $ny }}"
-                          stroke="#e31837" stroke-width="3" stroke-linecap="round"/>
-                    {{-- Dot on arc --}}
-                    <circle cx="{{ $dotX }}" cy="{{ $dotY }}" r="8" fill="#e31837"/>
-                    <circle cx="{{ $dotX }}" cy="{{ $dotY }}" r="4" fill="#fff"/>
-                    {{-- Center pivot --}}
-                    <circle cx="110" cy="115" r="7" fill="#ddd"/>
-                    <circle cx="110" cy="115" r="4" fill="#fff"/>
-
-                    {{-- Labels --}}
-                    <text x="12"  y="112" font-size="9" fill="#bbb" font-family="Arial" font-weight="700">LEVE</text>
-                    <text x="168" y="112" font-size="9" fill="#bbb" font-family="Arial" font-weight="700">SEVERO</text>
-                </svg>
-            </div>
-
-            <div class="gauge-angle-val">{{ $anguloDisplay }}<sup>°</sup></div>
-            <div class="nivel-wrap">
-                <div class="nivel-badge" style="background:{{ $nBg }};color:{{ $nTxt }};border-color:{{ $nBor }}">
-                    {{ $nivel }}
-                </div>
-            </div>
-        </div>
-
         {{-- ── PINKY TRACE ── --}}
         @if($pinky_points)
         <div class="res-card">
-            <p class="diag-header">📐 Trazo del meñique</p>
+            <p class="diag-header">🏥 Resultado del diagnóstico</p>
+            <div class="gauge-angle-val">{{ $anguloDisplay }}<sup>°</sup></div>
             <div class="trace-wrap">
                 <canvas id="pinky-trace" width="400" height="480"></canvas>
             </div>
@@ -283,7 +247,7 @@
       ctx.globalAlpha = 1;
 
       // Header
-      ctx.fillStyle = 'rgba(0, 229, 255, 0.15)';
+      /*ctx.fillStyle = 'rgba(0, 229, 255, 0.15)';
       ctx.fillRect(0, 0, W, 32);
       ctx.fillStyle = neon;
       ctx.font = '10px monospace';
@@ -292,7 +256,7 @@
       ctx.fillText('◈ PINKY ANALYSIS v2.1', 12, 16);
       ctx.textAlign = 'right';
       ctx.fillStyle = textDim;
-      ctx.fillText('PHONE PINKY™', W - 12, 16);
+      ctx.fillText('PHONE PINKY™', W - 12, 16);*/
 
       // Línea de referencia base→punta
       ctx.beginPath();
@@ -331,7 +295,7 @@
       }
 
       // Footer
-      ctx.fillStyle = 'rgba(0, 229, 255, 0.08)';
+      /*ctx.fillStyle = 'rgba(0, 229, 255, 0.08)';
       ctx.fillRect(0, H - 26, W, 26);
       ctx.fillStyle = textDim;
       ctx.font = '9px monospace';
@@ -341,7 +305,7 @@
       ctx.textAlign = 'right';
       ctx.fillStyle = accent;
       ctx.font = 'bold 11px monospace';
-      ctx.fillText(angleDeg.toFixed(1) + '° deviation', W - 12, H - 13);
+      ctx.fillText(angleDeg.toFixed(1) + '° deviation', W - 12, H - 13);*/
     }
 
     function drawTrace() {
