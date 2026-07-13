@@ -234,7 +234,8 @@ body {
   width: 100%;
   border: 5px solid var(--yellow);
   overflow: hidden;
-  background: #000;
+  /*background: #000;*/
+  background-image: url("../img/Recurso\ 17.png");
   flex: 1;
   max-height: 54vh;
 }
