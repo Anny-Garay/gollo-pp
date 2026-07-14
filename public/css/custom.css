@@ -11,6 +11,7 @@
 
 html {
   min-height: 100%;
+  scroll-behavior: smooth;
   background-color: var(--blue);
   background-image: linear-gradient(rgba(255, 255, 255, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .06) 1px, transparent 1px);
   background-size: 30px 30px;
@@ -575,6 +576,12 @@ body {
 #dev-upload { width: 100%; font-size: 0.8rem; }
 .head-left {
   min-height:480px;
+}
+.bajar {
+  text-align: center;
+}
+.bajar img {
+  max-width: 100px;
 }
 @media (max-width: 992px) {
   .logo-block {
