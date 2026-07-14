@@ -15,7 +15,7 @@
   
   <div class="bajar">
     <a href="javascript:void(0)" onclick="document.querySelector('.bajar').scrollIntoView({ behavior: 'smooth', block: 'start' })">
-      <img src="{{ asset('/img/abajo.jpeg') }}" alt="Bajar" class="bajar-icon">
+      <img src="{{ asset('/img/abajo.png') }}" alt="Bajar" class="bajar-icon">
     </a>
   </div>
   <div class="carga-body">
