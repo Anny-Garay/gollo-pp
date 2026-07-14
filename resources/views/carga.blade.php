@@ -27,6 +27,14 @@
                 <video id="video" autoplay playsinline muted></video>
                 <img id="guia-mano" src="{{ asset('img/scan/Recurso_6-2.png') }}" alt="Guía de mano">
             </div>
+            <div class="manos">
+              <button class="btn-cta" id="btn-mano-izquierda">
+                Mano Izquierda
+              </button>
+              <button class="btn-cta" id="btn-mano-derecha">
+                Mano Derecha
+              </button>
+            </div>
             <button class="btn-cta" id="btn-capturar">
               ¡Captura la foto!
             </button>
@@ -128,6 +136,16 @@
   </div>
 
   <script>
+      const guiaMano = document.getElementById('guia-mano');
+
+      document.getElementById('btn-mano-izquierda').addEventListener('click', () => {
+        guiaMano.style.transform = '';
+      });
+
+      document.getElementById('btn-mano-derecha').addEventListener('click', () => {
+        guiaMano.style.transform = 'scaleX(-1)';
+      });
+
       const CSRF = document.querySelector('meta[name="csrf-token"]').content;
 
       let capturedDataUrl  = null;
