@@ -81,7 +81,7 @@ class WebController extends Controller
 
         return response()->json([
             'humana_score'   => $humanaScore,
-            'angulo_menique' => $anguloMenique,
+            'angulo_menique' => $anguloMenique === 0 ? 0.1 : $anguloMenique, // Evitar 0 exacto para que el front no lo interprete como "no medido"
             'solo_menique'   => $soloMenique,
             'pinky_points'   => $pinkyPoints,
             'imagen_temp'    => $imagenTemp,

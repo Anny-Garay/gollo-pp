@@ -86,8 +86,8 @@
             <div class="form-card-head">
                 <span class="form-card-head-icon">🛡️</span>
                 <div class="form-card-head-text">
-                    <strong>Datos para tu documento</strong>
-                    <small>Llená para recibir tu descuento</small>
+                    <strong>Llená para recibir tu descuento</strong>
+                    <small>Datos para tu documento</small>
                 </div>
             </div>
 

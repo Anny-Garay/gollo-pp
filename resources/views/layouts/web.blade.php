@@ -19,5 +19,31 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- ═══ Scroll hint ═══ -->
+  <div id="scroll-hint" aria-label="Ver más">
+    <img src="{{ asset('/img/abajo.png') }}" alt="Bajar">
+  </div>
+  <script>
+    (function(){
+      var btn = document.getElementById('scroll-hint');
+      if (!btn) return;
+      function checkScroll() {
+        var scrollBottom = window.scrollY + window.innerHeight;
+        var pageHeight = document.documentElement.scrollHeight;
+        if (pageHeight <= window.innerHeight + 2 || scrollBottom >= pageHeight - 100) {
+          btn.classList.add('hidden');
+        } else {
+          btn.classList.remove('hidden');
+        }
+      }
+      window.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+      checkScroll();
+      btn.addEventListener('click', function () {
+        window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
+      });
+    })();
+  </script>
 </body>
 </html>
