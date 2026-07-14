@@ -9,9 +9,16 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+html {
+  min-height: 100%;
+  background-color: var(--blue);
+  background-image: linear-gradient(rgba(255, 255, 255, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .06) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
 body {
   font-family: "Space Grotesk", sans-serif;
-  background-color: var(--blue);
+  background: transparent;
   color: var(--white);
   overflow-x: hidden;
 }
@@ -19,7 +26,6 @@ body {
 /* ───── HERO ───── */
 .hero {
   position: relative;
-  background-color: var(--blue);
   min-height: 480px;
   overflow: hidden;
 }
@@ -103,7 +109,6 @@ body {
 
 /* ───── SECTION: Analizar ───── */
 .section-analizar {
-  background-color: var(--blue);
   padding: 56px 0 40px;
 }
 
@@ -274,8 +279,8 @@ body {
 .scan-module {
   --cyan: #00e5ff;
   --cyan-soft: #7df3ff;
-  --bg-dark: #08161c;
-  --bg-dark-2: #0c1f27;
+  --bg-dark: #004DB5;
+  --bg-dark-2: #003c8b;
   position: relative;
   width: 100%;
   min-height: 100dvh;

@@ -4,6 +4,7 @@
     $nivelTitulos = [1 => 'Nivel 1 — Leve', 2 => 'Nivel 2 — Bajo', 3 => 'Nivel 3 — Moderado', 4 => 'Nivel 4 — Alto', 5 => 'Nivel 5 — Severo'];
     $nivelCompleto = $nivelTitulos[$nivelNum];
     $nivelParts = explode(' — ', $nivelCompleto);
+  $primer_nombre = explode(' ', trim($nombre ?? ''))[0] ?? 'Sofía';
 @endphp
 
   <div id="compartir">
@@ -16,7 +17,7 @@
      <div style="clear:both;"></div>
   
      <div class="compartir-titular">
-       <div class="titular-linea1" id="txt-nombre">Uff, {{ $nombre ?? 'Sofía' }}</div>
+       <div class="titular-linea1" id="txt-nombre">Uff, {{ $primer_nombre }}</div>
        <div class="titular-linea2" id="txt-nivel-num">{{ $nivelParts[0] ?? 'Nivel 1' }}</div>
        <div class="titular-linea3" id="txt-nivel-desc">{{ $nivelParts[1] ?? 'Leve' }}</div>
      </div>
@@ -53,8 +54,6 @@
       <div class="cta-linea2">gollo.com/pinky</div>
       <div class="cta-linea3">y medí el tuyo</div>
     </div>
- 
-    <div class="compartir-footer">XXXXX &nbsp;|&nbsp; GOLLO.COM</div>
  
   </div>
  
