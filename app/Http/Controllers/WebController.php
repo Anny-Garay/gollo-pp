@@ -81,7 +81,7 @@ class WebController extends Controller
 
         return response()->json([
             'humana_score'   => $humanaScore,
-            'angulo_menique' => $anguloMenique === 0 ? 0.1 : $anguloMenique, // Evitar 0 exacto para que el front no lo interprete como "no medido"
+            'angulo_menique' => max(2.0, $anguloMenique ?? 2.0), // Mínimo 2 para evitar que el front lo interprete como "no medido"
             'solo_menique'   => $soloMenique,
             'pinky_points'   => $pinkyPoints,
             'imagen_temp'    => $imagenTemp,
@@ -258,7 +258,7 @@ EOT;
             if ($angle > $maxAngle) $maxAngle = $angle;
         }
 
-        return min(20.0, round($maxAngle, 1));
+        return max(2.0, min(20.0, round($maxAngle, 1)));
     }
 
     public function resultado()
@@ -288,7 +288,8 @@ EOT;
         );
         abort_unless(\Storage::disk('public')->exists($imagenTemp), 422, 'Imagen no encontrada.');
 
-        $anguloMenique = $request->angulo_menique !== null ? min(20.0, (float) $request->angulo_menique) : null;
+        $rawAngulo = $request->angulo_menique !== null ? (float) $request->angulo_menique : null;
+$anguloMenique = $rawAngulo !== null ? max(2.0, min(20.0, $rawAngulo)) : null;
         $pinkyPoints   = $request->pinky_points ? json_decode($request->pinky_points, true) : null;
 
         session([
@@ -334,7 +335,8 @@ EOT;
         }
 
         $humanaScore   = $request->input('humana_score')   ?? session('humana_score');
-        $anguloMenique = $request->input('angulo_menique') ?? session('angulo_menique');
+        $rawAngulo = $request->input('angulo_menique') ?? session('angulo_menique');
+$anguloMenique = $rawAngulo !== null ? max(2.0, (float) $rawAngulo) : null;
 
         Participante::create([
             'nombre'         => $request->nombre,
