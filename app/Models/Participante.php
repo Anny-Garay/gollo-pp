@@ -15,5 +15,8 @@ class Participante extends Model
         'humana_score',
         'angulo_menique',
         'imagen_ruta',
+        'cupon_codigo',
+        'cupon_monto',
+        'cupon_monto_texto',
     ];
 }

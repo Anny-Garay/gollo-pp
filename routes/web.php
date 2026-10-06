@@ -29,6 +29,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('auth')->group(function () {
         Route::get('participantes', [AdminController::class, 'participantes'])->name('participantes');
         Route::delete('participantes/{participante}', [AdminController::class, 'destroyParticipante'])->name('participantes.destroy');
+        Route::get('cupones', [AdminController::class, 'cupones'])->name('cupones');
+        Route::put('cupones/{cupon}', [AdminController::class, 'cuponesUpdate'])->name('cupones.update');
         Route::get('niveles', [AdminController::class, 'niveles'])->name('niveles');
         Route::put('niveles/{nivel}', [AdminController::class, 'nivelesUpdate'])->name('niveles.update');
         Route::get('productos', [AdminController::class, 'productos'])->name('productos');

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Participante;
 use App\Models\Producto;
+use App\Models\Cupon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class WebController extends Controller
@@ -263,11 +265,15 @@ EOT;
 
     public function resultado()
     {
+        $angulo = session('angulo_menique');
+        $cupon = Cupon::obtenerPorDesviacion($angulo !== null ? (float)$angulo : null);
+
         return view('resultado', [
             'humana_score'   => session('humana_score'),
-            'angulo_menique' => session('angulo_menique'),
+            'angulo_menique' => $angulo,
             'pinky_points'   => session('pinky_points'),
             'imagen_temp'    => session('imagen_temp'),
+            'cupon'          => $cupon,
         ]);
     }
 
@@ -289,7 +295,7 @@ EOT;
         abort_unless(\Storage::disk('public')->exists($imagenTemp), 422, 'Imagen no encontrada.');
 
         $rawAngulo = $request->angulo_menique !== null ? (float) $request->angulo_menique : null;
-$anguloMenique = $rawAngulo !== null ? max(2.0, min(20.0, $rawAngulo)) : null;
+        $anguloMenique = $rawAngulo !== null ? max(2.0, min(20.0, $rawAngulo)) : null;
         $pinkyPoints   = $request->pinky_points ? json_decode($request->pinky_points, true) : null;
 
         session([
@@ -304,11 +310,15 @@ $anguloMenique = $rawAngulo !== null ? max(2.0, min(20.0, $rawAngulo)) : null;
 
     public function resultados()
     {
+        $angulo = session('angulo_menique');
+        $cupon = Cupon::obtenerPorDesviacion($angulo !== null ? (float)$angulo : null);
+
         return view('resultado', [
             'humana_score'   => session('humana_score'),
-            'angulo_menique' => session('angulo_menique'),
+            'angulo_menique' => $angulo,
             'pinky_points'   => session('pinky_points'),
             'imagen_temp'    => session('imagen_temp'),
+            'cupon'          => $cupon,
         ]);
     }
 
@@ -335,29 +345,61 @@ $anguloMenique = $rawAngulo !== null ? max(2.0, min(20.0, $rawAngulo)) : null;
         }
 
         $humanaScore   = $request->input('humana_score')   ?? session('humana_score');
-        $rawAngulo = $request->input('angulo_menique') ?? session('angulo_menique');
-$anguloMenique = $rawAngulo !== null ? max(2.0, (float) $rawAngulo) : null;
+        $rawAngulo     = $request->input('angulo_menique') ?? session('angulo_menique');
+        $anguloMenique = $rawAngulo !== null ? max(2.0, (float) $rawAngulo) : null;
 
-        Participante::create([
-            'nombre'         => $request->nombre,
-            'cedula'         => $request->cedula,
-            'celular'        => $request->celular,
-            'email'          => $request->email,
-            'foto'           => $imagenRuta,
-            'humana_score'   => $humanaScore,
-            'angulo_menique' => $anguloMenique,
-        ]);
+        $cuponAsignado = null;
+        $cuponAgotado  = false;
+
+        DB::transaction(function () use ($anguloMenique, &$cuponAsignado, &$cuponAgotado, $request, $imagenRuta, $humanaScore) {
+            $cupon = Cupon::obtenerPorDesviacion($anguloMenique);
+            
+            $cuponCodigo = null;
+            $cuponMonto  = null;
+            $cuponMontoTexto = null;
+
+            if ($cupon) {
+                // Bloqueo pesimista para evitar carreras de stock
+                $cuponLock = Cupon::where('id', $cupon->id)->lockForUpdate()->first();
+                if ($cuponLock && $cuponLock->stock_disponible > 0) {
+                    $cuponLock->decrement('stock_disponible');
+                    $cuponCodigo     = $cuponLock->codigo;
+                    $cuponMonto      = $cuponLock->monto_descuento;
+                    $cuponMontoTexto = $cuponLock->monto_texto;
+                    $cuponAsignado   = $cuponLock;
+                } else {
+                    $cuponAgotado = true;
+                }
+            }
+
+            Participante::create([
+                'nombre'            => $request->nombre,
+                'cedula'            => $request->cedula,
+                'celular'           => $request->celular,
+                'email'             => $request->email,
+                'foto'              => $imagenRuta,
+                'humana_score'      => $humanaScore,
+                'angulo_menique'    => $anguloMenique,
+                'cupon_codigo'      => $cuponCodigo,
+                'cupon_monto'       => $cuponMonto,
+                'cupon_monto_texto' => $cuponMontoTexto,
+            ]);
+        });
 
         session()->forget(['imagen_temp', 'humana_score', 'angulo_menique']);
 
         $docNumber = 'PP-' . strtoupper(substr(md5($request->cedula . now()->timestamp), 0, 8));
 
         return redirect()->route('listo')->with([
-            'nombre'         => $request->nombre,
-            'cedula'         => $request->cedula,
-            'angulo_menique' => $anguloMenique,
-            'humana_score'   => $humanaScore,
-            'doc_number'     => $docNumber,
+            'nombre'            => $request->nombre,
+            'cedula'            => $request->cedula,
+            'angulo_menique'    => $anguloMenique,
+            'humana_score'      => $humanaScore,
+            'doc_number'        => $docNumber,
+            'cupon_codigo'      => $cuponAsignado?->codigo,
+            'cupon_monto'       => $cuponAsignado?->monto_descuento,
+            'cupon_monto_texto' => $cuponAsignado?->monto_texto,
+            'cupon_agotado'     => $cuponAgotado,
         ]);
     }
 
@@ -368,12 +410,16 @@ $anguloMenique = $rawAngulo !== null ? max(2.0, (float) $rawAngulo) : null;
         }
         $productos = Producto::where('activo', true)->orderBy('orden')->orderBy('id')->get();
         return view('listo', [
-            'nombre'         => session('nombre'),
-            'cedula'         => session('cedula'),
-            'angulo_menique' => session('angulo_menique'),
-            'humana_score'   => session('humana_score'),
-            'doc_number'     => session('doc_number'),
-            'productos'      => $productos,
+            'nombre'            => session('nombre'),
+            'cedula'            => session('cedula'),
+            'angulo_menique'    => session('angulo_menique'),
+            'humana_score'      => session('humana_score'),
+            'doc_number'        => session('doc_number'),
+            'cupon_codigo'      => session('cupon_codigo'),
+            'cupon_monto'       => session('cupon_monto'),
+            'cupon_monto_texto' => session('cupon_monto_texto'),
+            'cupon_agotado'     => session('cupon_agotado'),
+            'productos'         => $productos,
         ]);
     }
 }

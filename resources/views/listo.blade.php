@@ -48,6 +48,52 @@
         {{-- Banner negro --}}
         <div class="doc-banner">Documento de canje oficial &mdash; Phone Pinky™</div>
 
+        {{-- Body con datos de canje y cupón --}}
+        <div class="doc-body">
+            <div class="doc-row">
+                <div class="doc-col">
+                    <div class="doc-field-label">Beneficiario</div>
+                    <div class="doc-field-value">{{ $nombre }}</div>
+                </div>
+                <div class="doc-col">
+                    <div class="doc-field-label">Cédula / DIMEX</div>
+                    <div class="doc-field-value">{{ $cedula }}</div>
+                </div>
+            </div>
+
+            {{-- Cupón asignado --}}
+            @if(!empty($cupon_codigo))
+            <div class="doc-beneficio" style="background: #f0f7ff; border: 2px solid #004DB5; border-radius: 14px; padding: 14px 16px; margin-bottom: 16px;">
+                <div class="doc-beneficio-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                    <span class="doc-beneficio-badge" style="color: #004DB5; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;">🎟️ Cupón oficial</span>
+                    <span style="background: #004DB5; color: #fff; font-family: monospace; font-weight: 900; font-size: 15px; padding: 3px 10px; border-radius: 6px; letter-spacing: 1px;">
+                        {{ $cupon_codigo }}
+                    </span>
+                </div>
+                <div class="doc-beneficio-title" style="font-size: 22px; font-weight: 900; color: #e31837; margin: 4px 0 6px;">
+                    {{ $cupon_monto_texto ?? ('₡' . number_format($cupon_monto, 0, ',', '.')) }} de descuento
+                </div>
+                <p style="font-size: 12px; color: #555; margin: 0; line-height: 1.4;">Presentá este cupón en cualquier tienda Gollo o en gollo.com para aplicar tu descuento.</p>
+            </div>
+            @elseif(!empty($cupon_agotado))
+            <div class="doc-beneficio" style="background: #fff8f8; border: 1.5px solid #e74c3c; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;">
+                <div style="font-size: 13px; font-weight: 800; color: #c0392b;">Stock de cupones agotado para esta categoría</div>
+                <p style="font-size: 12px; color: #777; margin: 4px 0 0;">Los cupones para este nivel de inclinación se han agotado.</p>
+            </div>
+            @endif
+
+            <div class="doc-row">
+                <div class="doc-col">
+                    <div class="doc-field-label">Desviación Meñique</div>
+                    <div class="doc-field-value" style="color: #004DB5;">{{ $anguloDisplay }}° ({{ $nivel }})</div>
+                </div>
+                <div class="doc-col">
+                    <div class="doc-field-label">Válido hasta</div>
+                    <div class="doc-field-value doc-vence">{{ $vence }}</div>
+                </div>
+            </div>
+        </div>
+
         @include('compartir')
 
         <div class="doc-fine">

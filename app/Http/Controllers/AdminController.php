@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cupon;
 use App\Models\NivelTexto;
 use App\Models\Participante;
 use App\Models\Producto;
@@ -48,14 +49,52 @@ class AdminController extends Controller
         $query = Participante::query();
 
         if ($search = $request->input('buscar')) {
-            $query->where('nombre', 'like', "%{$search}%")
+            $query->where(function($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
                   ->orWhere('cedula', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('cupon_codigo', 'like', "%{$search}%");
+            });
+        }
+
+        if ($cuponFilter = $request->input('cupon')) {
+            $query->where('cupon_codigo', $cuponFilter);
         }
 
         $participantes = $query->latest()->paginate(20)->withQueryString();
+        $cupones = Cupon::orderBy('min_desviacion')->get();
+        $totalEntregados = Participante::whereNotNull('cupon_codigo')->count();
+        $totalStock = Cupon::sum('stock_total');
+        $totalDisponible = Cupon::sum('stock_disponible');
 
-        return view('admin.participantes', compact('participantes'));
+        return view('admin.participantes', compact('participantes', 'cupones', 'totalEntregados', 'totalStock', 'totalDisponible'));
+    }
+
+    public function cupones()
+    {
+        $cupones = Cupon::orderBy('min_desviacion')->get();
+        $totalStock = Cupon::sum('stock_total');
+        $totalDisponible = Cupon::sum('stock_disponible');
+        $totalEntregados = Participante::whereNotNull('cupon_codigo')->count();
+
+        return view('admin.cupones', compact('cupones', 'totalStock', 'totalDisponible', 'totalEntregados'));
+    }
+
+    public function cuponesUpdate(Request $request, Cupon $cupon)
+    {
+        $request->validate([
+            'stock_total'      => 'required|integer|min:0',
+            'stock_disponible' => 'required|integer|min:0',
+            'activo'           => 'boolean',
+        ]);
+
+        $cupon->update([
+            'stock_total'      => (int) $request->stock_total,
+            'stock_disponible' => (int) $request->stock_disponible,
+            'activo'           => $request->boolean('activo'),
+        ]);
+
+        return back()->with('success', "Cupón {$cupon->codigo} actualizado correctamente.");
     }
 
     public function registerForm()
