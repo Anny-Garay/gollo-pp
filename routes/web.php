@@ -27,6 +27,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::post('register', [AdminController::class, 'registerPost'])->name('register.post');
 
     Route::middleware('auth')->group(function () {
+        Route::get('participantes/export/csv', [AdminController::class, 'exportParticipantes'])->name('participantes.export.csv');
+        Route::get('participantes/export/fotos', [AdminController::class, 'exportFotosZip'])->name('participantes.export.fotos');
         Route::get('participantes', [AdminController::class, 'participantes'])->name('participantes');
         Route::delete('participantes/{participante}', [AdminController::class, 'destroyParticipante'])->name('participantes.destroy');
         Route::get('cupones', [AdminController::class, 'cupones'])->name('cupones');

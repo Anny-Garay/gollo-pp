@@ -18,6 +18,7 @@
 
         {{-- ── PASO 1: Cámara ── --}}
         <div id="paso-camara" style="display:flex">
+            <h4 class="text-center">Para escanear tu dedo, colocá tu mano según la figura en la imagen y capturá la foto para recibir tu descuento.</h4>
             <div class="camera-container">
                 <video id="video" autoplay playsinline muted></video>
                 <img id="guia-mano" src="{{ asset('img/scan/Recurso_6-2.png') }}" alt="Guía de mano">

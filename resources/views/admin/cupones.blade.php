@@ -152,66 +152,68 @@
 
     {{-- ── TABLA DE CUPONES SEGÚN CONFIGURACIÓN OFICIAL ── --}}
     <h3 style="color:#0b3a6d; margin: 20px 0 10px; font-size:1.1rem;">Tabla Oficial de Cupones por Grado de Inclinación</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Desviación</th>
-                <th>Nombre del cupón</th>
-                <th>Monto de descuento</th>
-                <th>Stock Inicial</th>
-                <th>Entregados</th>
-                <th>Cupones Restantes</th>
-                <th style="min-width: 170px;">Ajustar Stock</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($cupones as $c)
-            @php
-                $entregados = $c->entregados;
-                $pct = $c->stock_total > 0 ? round(($c->stock_disponible / $c->stock_total) * 100) : 0;
-                $stockClass = $c->stock_disponible > 5 ? 'stock-ok' : ($c->stock_disponible > 0 ? 'stock-low' : 'stock-empty');
-            @endphp
-            <tr>
-                <td><strong>{{ $c->rango_texto }}</strong></td>
-                <td>
-                    <span class="cupon-tag">{{ $c->codigo }}</span>
-                </td>
-                <td>
-                    <span class="monto-tag">{{ $c->monto_texto }}</span>
-                    <div style="font-size:0.75rem; color:#888;">{{ $c->monto_colones }}</div>
-                </td>
-                <td>{{ $c->stock_total }}</td>
-                <td>
-                    <a href="{{ route('admin.participantes', ['cupon' => $c->codigo]) }}" style="font-weight:700; color:#0284c7; text-decoration:none;">
-                        {{ $entregados }} participante{{ $entregados != 1 ? 's' : '' }} ↗
-                    </a>
-                </td>
-                <td>
-                    <span class="badge-stock {{ $stockClass }}">
-                        @if($c->stock_disponible > 0)
-                            ● {{ $c->stock_disponible }} disponibles
-                        @else
-                            ✖ Agotado
-                        @endif
-                    </span>
-                    <div class="progress-bar-wrap">
-                        <div class="progress-bar-fill" style="width: {{ $pct }}%; background: {{ $c->stock_disponible > 5 ? '#10b981' : ($c->stock_disponible > 0 ? '#f59e0b' : '#ef4444') }}"></div>
-                    </div>
-                </td>
-                <td>
-                    <form method="POST" action="{{ route('admin.cupones.update', $c) }}" class="form-stock-inline">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" name="stock_total" value="{{ $c->stock_total }}">
-                        <input type="number" name="stock_disponible" class="input-stock" value="{{ $c->stock_disponible }}" min="0" title="Stock disponible">
-                        <input type="hidden" name="activo" value="1">
-                        <button type="submit" class="btn-save-stock">Guardar</button>
-                    </form>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Desviación</th>
+                    <th>Nombre del cupón</th>
+                    <th>Monto de descuento</th>
+                    <th>Stock Inicial</th>
+                    <th>Entregados</th>
+                    <th>Cupones Restantes</th>
+                    <th style="min-width: 170px;">Ajustar Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($cupones as $c)
+                @php
+                    $entregados = $c->entregados;
+                    $pct = $c->stock_total > 0 ? round(($c->stock_disponible / $c->stock_total) * 100) : 0;
+                    $stockClass = $c->stock_disponible > 5 ? 'stock-ok' : ($c->stock_disponible > 0 ? 'stock-low' : 'stock-empty');
+                @endphp
+                <tr>
+                    <td><strong>{{ $c->rango_texto }}</strong></td>
+                    <td>
+                        <span class="cupon-tag">{{ $c->codigo }}</span>
+                    </td>
+                    <td>
+                        <span class="monto-tag">{{ $c->monto_texto }}</span>
+                        <div style="font-size:0.75rem; color:#888;">{{ $c->monto_colones }}</div>
+                    </td>
+                    <td>{{ $c->stock_total }}</td>
+                    <td>
+                        <a href="{{ route('admin.participantes', ['cupon' => $c->codigo]) }}" style="font-weight:700; color:#0284c7; text-decoration:none;">
+                            {{ $entregados }} participante{{ $entregados != 1 ? 's' : '' }} ↗
+                        </a>
+                    </td>
+                    <td>
+                        <span class="badge-stock {{ $stockClass }}">
+                            @if($c->stock_disponible > 0)
+                                ● {{ $c->stock_disponible }} disponibles
+                            @else
+                                ✖ Agotado
+                            @endif
+                        </span>
+                        <div class="progress-bar-wrap">
+                            <div class="progress-bar-fill" style="width: {{ $pct }}%; background: {{ $c->stock_disponible > 5 ? '#10b981' : ($c->stock_disponible > 0 ? '#f59e0b' : '#ef4444') }}"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ route('admin.cupones.update', $c) }}" class="form-stock-inline">
+                            @csrf
+                            @method('PUT')
+                            <input type="hidden" name="stock_total" value="{{ $c->stock_total }}">
+                            <input type="number" name="stock_disponible" class="input-stock" value="{{ $c->stock_disponible }}" min="0" title="Stock disponible">
+                            <input type="hidden" name="activo" value="1">
+                            <button type="submit" class="btn-save-stock">Guardar</button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
 </div>
 @endsection

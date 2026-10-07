@@ -10,6 +10,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use ZipArchive;
 
 class AdminController extends Controller
 {
@@ -68,6 +71,130 @@ class AdminController extends Controller
         $totalDisponible = Cupon::sum('stock_disponible');
 
         return view('admin.participantes', compact('participantes', 'cupones', 'totalEntregados', 'totalStock', 'totalDisponible'));
+    }
+
+    public function exportParticipantes(Request $request): StreamedResponse
+    {
+        $query = Participante::query();
+
+        if ($search = $request->input('buscar')) {
+            $query->where(function($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                  ->orWhere('cedula', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('cupon_codigo', 'like', "%{$search}%");
+            });
+        }
+
+        if ($cuponFilter = $request->input('cupon')) {
+            $query->where('cupon_codigo', $cuponFilter);
+        }
+
+        $participantes = $query->latest('id')->get();
+        $filename = 'participantes_' . date('Y-m-d_His') . '.csv';
+
+        return response()->streamDownload(function () use ($participantes) {
+            $handle = fopen('php://output', 'w');
+            
+            // BOM UTF-8 para apertura correcta con acentos en Excel
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Encabezados CSV
+            fputcsv($handle, [
+                'ID',
+                'Nombre y Apellido',
+                'Cédula / DIMEX',
+                'Celular',
+                'Email',
+                'Desviación (°)',
+                'Cupón',
+                'Monto Descuento',
+                'Foto URL',
+                'Fecha de Registro',
+            ], ';');
+
+            foreach ($participantes as $p) {
+                fputcsv($handle, [
+                    $p->id,
+                    $p->nombre,
+                    $p->cedula,
+                    $p->celular,
+                    $p->email,
+                    $p->angulo_menique !== null ? $p->angulo_menique . '°' : '—',
+                    $p->cupon_codigo ?: 'Sin cupón',
+                    $p->cupon_monto_texto ?: ($p->cupon_monto ? '₡' . number_format($p->cupon_monto, 0, ',', '.') : '—'),
+                    $p->foto ? url('img/' . $p->foto) : 'Sin foto',
+                    $p->created_at ? $p->created_at->format('d/m/Y H:i:s') : '—',
+                ], ';');
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    public function exportFotosZip(Request $request)
+    {
+        $participantes = Participante::whereNotNull('foto')
+            ->where('foto', '!=', '')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        if ($participantes->isEmpty()) {
+            return back()->with('error', 'No hay participantes con fotos para descargar.');
+        }
+
+        $zipFileName = 'fotos_participantes_' . date('Y-m-d_His') . '.zip';
+        $tempDir = storage_path('app/temp');
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
+        $zipFilePath = $tempDir . '/' . $zipFileName;
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return back()->with('error', 'No se pudo crear el archivo ZIP.');
+        }
+
+        $usedNames = [];
+        $addedCount = 0;
+
+        foreach ($participantes as $p) {
+            if (!$p->foto || !Storage::disk('public')->exists($p->foto)) {
+                continue;
+            }
+
+            $extension = pathinfo($p->foto, PATHINFO_EXTENSION) ?: 'jpg';
+            // Sanitizar nombre del participante
+            $safeNombre = trim(preg_replace('/[^\p{L}\p{N}\s\-_]/u', '', $p->nombre));
+            $safeNombre = preg_replace('/\s+/', ' ', $safeNombre) ?: 'participante';
+
+            // Nombre de la foto: "Nombre del participante - ID"
+            $fileName = "{$safeNombre} - {$p->id}.{$extension}";
+
+            // Evitar colisiones exactas en zip
+            if (isset($usedNames[$fileName])) {
+                $usedNames[$fileName]++;
+                $fileName = "{$safeNombre} - {$p->id} ({$usedNames[$fileName]}).{$extension}";
+            } else {
+                $usedNames[$fileName] = 1;
+            }
+
+            $fileContents = Storage::disk('public')->get($p->foto);
+            $zip->addFromString($fileName, $fileContents);
+            $addedCount++;
+        }
+
+        $zip->close();
+
+        if ($addedCount === 0) {
+            @unlink($zipFilePath);
+            return back()->with('error', 'No se encontraron archivos de fotos en el servidor.');
+        }
+
+        return response()->download($zipFilePath, $zipFileName)->deleteFileAfterSend(true);
     }
 
     public function cupones()

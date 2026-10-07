@@ -18,8 +18,9 @@
         header h1 { font-size: 1.2rem; letter-spacing: 1px; }
         header a { color: #aed6f1; text-decoration: none; font-size: 0.9rem; }
         header a:hover { color: #fff; }
-        .container { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
-        .card { background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 28px; }
+        .container { max-width: 1480px; width: 96%; margin: 28px auto; padding: 0 16px; }
+        .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 28px; width: 100%; box-sizing: border-box; }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
         .alert-success {
             background: #d4edda; color: #155724; border: 1px solid #c3e6cb;
             border-radius: 6px; padding: 10px 16px; margin-bottom: 16px;
