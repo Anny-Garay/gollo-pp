@@ -39,7 +39,7 @@
 
         <!-- Ilustración izquierda -->
         <div class="col-auto">
-          <img src="{{ asset('/img/imagen1.png') }}" alt="Mano izquierda" style="width:130px;">
+          <img src="{{ asset('/img/imagen1.jpeg') }}" alt="Mano izquierda" style="width:130px;">
         </div>
 
         <!-- Texto central -->
