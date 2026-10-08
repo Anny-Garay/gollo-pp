@@ -50,14 +50,14 @@
     </div>
  
     @if(!empty($cupon_codigo) || !empty($cupon_monto_texto))
-    <div style="background: rgba(0, 0, 0, 0.28); border: 2.5px dashed var(--yellow); border-radius: 12px; padding: 12px 14px; margin-top: 18px; text-align: center; color: #fff;">
+    <!--<div style="background: rgba(0, 0, 0, 0.28); border: 2.5px dashed var(--yellow); border-radius: 12px; padding: 12px 14px; margin-top: 18px; text-align: center; color: #fff;">
       <div style="font-size: 16px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;">
         <span>🎟️ CUPÓN:</span>
         <strong style="color: var(--yellow); font-size: 22px; font-family: monospace; letter-spacing: 1px;">{{ $cupon_codigo }}</strong>
         <span style="color: var(--yellow); font-size: 20px;">•</span>
         <span style="font-size: 19px; font-weight: 900; color: #ffffff;">{{ $cupon_monto_texto }}</span>
       </div>
-    </div>
+    </div>-->
     @endif
 
     <div class="compartir-cta">
