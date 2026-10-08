@@ -44,6 +44,22 @@
         window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
       });
     })();
+
+    // Auto-notificar altura al padre (iframe)
+    (function(){
+      function notificarAltura() {
+        try {
+          if (window.parent && window.parent !== window) {
+            var h = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+            window.parent.postMessage({ type: 'gollo-pinky-resize', height: h }, '*');
+          }
+        } catch(e) {}
+      }
+      window.addEventListener('load', notificarAltura);
+      window.addEventListener('resize', notificarAltura);
+      setTimeout(notificarAltura, 300);
+      setTimeout(notificarAltura, 1000);
+    })();
   </script>
 </body>
 </html>

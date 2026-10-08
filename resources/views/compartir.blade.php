@@ -27,7 +27,7 @@
       <div class="mano-slot-wrap">
         <div class="mano-slot">
           <!-- Foto/ilustración de la mano o guante -->
-          <img src="img/mano2.jpeg" alt="" />
+          <img src="img/mano2.png" alt="" />
         </div>
       </div>
  

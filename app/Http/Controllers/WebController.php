@@ -263,16 +263,23 @@ EOT;
         return max(2.0, min(20.0, round($maxAngle, 1)));
     }
 
-    public function resultado()
+    public function resultado(Request $request)
     {
-        $angulo = session('angulo_menique');
-        $cupon = Cupon::obtenerPorDesviacion($angulo !== null ? (float)$angulo : null);
+        $imagenTemp    = $request->input('imagen_temp') ?? session('imagen_temp');
+        $humanaScore   = $request->input('humana_score') ?? session('humana_score');
+        $rawAngulo     = $request->input('angulo_menique') ?? session('angulo_menique');
+        $anguloMenique = $rawAngulo !== null ? max(2.0, min(20.0, (float)$rawAngulo)) : null;
+
+        $rawPoints = $request->input('pinky_points') ?? session('pinky_points');
+        $pinkyPoints = is_string($rawPoints) ? json_decode($rawPoints, true) : (is_array($rawPoints) ? $rawPoints : null);
+
+        $cupon = Cupon::obtenerPorDesviacion($anguloMenique);
 
         return view('resultado', [
-            'humana_score'   => session('humana_score'),
-            'angulo_menique' => $angulo,
-            'pinky_points'   => session('pinky_points'),
-            'imagen_temp'    => session('imagen_temp'),
+            'humana_score'   => $humanaScore,
+            'angulo_menique' => $anguloMenique,
+            'pinky_points'   => $pinkyPoints,
+            'imagen_temp'    => $imagenTemp,
             'cupon'          => $cupon,
         ]);
     }
@@ -294,7 +301,7 @@ EOT;
         );
         abort_unless(\Storage::disk('public')->exists($imagenTemp), 422, 'Imagen no encontrada.');
 
-        $rawAngulo = $request->angulo_menique !== null ? (float) $request->angulo_menique : null;
+        $rawAngulo     = $request->angulo_menique !== null ? (float) $request->angulo_menique : null;
         $anguloMenique = $rawAngulo !== null ? max(2.0, min(20.0, $rawAngulo)) : null;
         $pinkyPoints   = $request->pinky_points ? json_decode($request->pinky_points, true) : null;
 
@@ -305,21 +312,17 @@ EOT;
             'pinky_points'   => $pinkyPoints,
         ]);
 
-        return redirect()->route('resultados');
+        return redirect()->route('resultado', [
+            'imagen_temp'    => $imagenTemp,
+            'humana_score'   => $request->humana_score,
+            'angulo_menique' => $anguloMenique,
+            'pinky_points'   => $request->pinky_points,
+        ]);
     }
 
-    public function resultados()
+    public function resultados(Request $request)
     {
-        $angulo = session('angulo_menique');
-        $cupon = Cupon::obtenerPorDesviacion($angulo !== null ? (float)$angulo : null);
-
-        return view('resultado', [
-            'humana_score'   => session('humana_score'),
-            'angulo_menique' => $angulo,
-            'pinky_points'   => session('pinky_points'),
-            'imagen_temp'    => session('imagen_temp'),
-            'cupon'          => $cupon,
-        ]);
+        return $this->resultado($request);
     }
 
     public function guardar(Request $request)
@@ -331,7 +334,7 @@ EOT;
             'email'   => 'required|email|max:255',
         ]);
 
-        $imagenTemp = session('imagen_temp');
+        $imagenTemp = $request->input('imagen_temp') ?? session('imagen_temp');
         $imagenRuta = null;
 
         if (
@@ -390,35 +393,39 @@ EOT;
 
         $docNumber = 'PP-' . strtoupper(substr(md5($request->cedula . now()->timestamp), 0, 8));
 
-        return redirect()->route('listo')->with([
+        $params = [
+            'doc_number'        => $docNumber,
             'nombre'            => $request->nombre,
             'cedula'            => $request->cedula,
             'angulo_menique'    => $anguloMenique,
             'humana_score'      => $humanaScore,
-            'doc_number'        => $docNumber,
             'cupon_codigo'      => $cuponAsignado?->codigo,
             'cupon_monto'       => $cuponAsignado?->monto_descuento,
             'cupon_monto_texto' => $cuponAsignado?->monto_texto,
-            'cupon_agotado'     => $cuponAgotado,
-        ]);
+            'cupon_agotado'     => $cuponAgotado ? 1 : 0,
+        ];
+
+        return redirect()->route('listo', $params)->with($params);
     }
 
-    public function listo()
+    public function listo(Request $request)
     {
-        if (!session('doc_number')) {
+        $docNumber = $request->input('doc_number') ?? session('doc_number');
+        if (!$docNumber) {
             return redirect()->route('inicio');
         }
+
         $productos = Producto::where('activo', true)->orderBy('orden')->orderBy('id')->get();
         return view('listo', [
-            'nombre'            => session('nombre'),
-            'cedula'            => session('cedula'),
-            'angulo_menique'    => session('angulo_menique'),
-            'humana_score'      => session('humana_score'),
-            'doc_number'        => session('doc_number'),
-            'cupon_codigo'      => session('cupon_codigo'),
-            'cupon_monto'       => session('cupon_monto'),
-            'cupon_monto_texto' => session('cupon_monto_texto'),
-            'cupon_agotado'     => session('cupon_agotado'),
+            'nombre'            => $request->input('nombre') ?? session('nombre'),
+            'cedula'            => $request->input('cedula') ?? session('cedula'),
+            'angulo_menique'    => $request->input('angulo_menique') ?? session('angulo_menique'),
+            'humana_score'      => $request->input('humana_score') ?? session('humana_score'),
+            'doc_number'        => $docNumber,
+            'cupon_codigo'      => $request->input('cupon_codigo') ?? session('cupon_codigo'),
+            'cupon_monto'       => $request->input('cupon_monto') ?? session('cupon_monto'),
+            'cupon_monto_texto' => $request->input('cupon_monto_texto') ?? session('cupon_monto_texto'),
+            'cupon_agotado'     => (bool) ($request->input('cupon_agotado') ?? session('cupon_agotado')),
             'productos'         => $productos,
         ]);
     }

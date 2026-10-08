@@ -19,6 +19,19 @@
         {{-- ── PASO 1: Cámara ── --}}
         <div id="paso-camara" style="display:flex">
             <h4 class="text-center">Para escanear tu dedo, colocá tu mano según la figura en la imagen y capturá la foto para recibir tu descuento.</h4>
+
+            {{-- Alert CSS Danger para errores de captura/cámara --}}
+            <div id="scan-alert-box" class="alert alert-danger shadow-sm" role="alert" style="display: none; width: 100%; max-width: 540px; border-radius: 14px; border: 2px solid #dc3545; background-color: #fff5f5; color: #842029; padding: 14px 18px; margin: 10px 0 16px;">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                    <div style="font-size: 24px; line-height: 1; flex-shrink: 0;">⚠️</div>
+                    <div style="flex-grow: 1;">
+                        <strong style="font-size: 15px; font-weight: 800; display: block; margin-bottom: 3px; color: #b02a37;">Atención</strong>
+                        <div id="scan-alert-msg" style="font-size: 14px; line-height: 1.4; color: #58151c; font-weight: 600;"></div>
+                    </div>
+                    <button type="button" class="btn-close" aria-label="Cerrar" onclick="ocultarError()" style="flex-shrink: 0;"></button>
+                </div>
+            </div>
+
             <div class="camera-container">
                 <video id="video" autoplay playsinline muted></video>
                 <img id="guia-mano" src="{{ asset('img/scan/Recurso_6-2.png') }}" alt="Guía de mano">
@@ -117,9 +130,8 @@
             </div>
         </div>
 
-        {{-- ── Form oculto → POST /resultados ── --}}
-        <form id="form-resultados" method="POST" action="{{ route('resultados.store') }}">
-            @csrf
+        {{-- ── Form oculto → GET /resultado ── --}}
+        <form id="form-resultados" method="GET" action="{{ route('resultado') }}">
             <input type="hidden" id="fi-imagen-temp" name="imagen_temp">
             <input type="hidden" id="fi-humana"       name="humana_score">
             <input type="hidden" id="fi-angulo"       name="angulo_menique">
@@ -163,6 +175,23 @@
       const scanBar      = document.getElementById('scan-bar');
       const scanPct      = document.getElementById('scan-pct');
 
+      function mostrarError(mensaje) {
+          const alertBox = document.getElementById('scan-alert-box');
+          const alertMsg = document.getElementById('scan-alert-msg');
+          if (alertBox && alertMsg) {
+              alertMsg.textContent = mensaje;
+              alertBox.style.display = 'block';
+              alertBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+      }
+
+      function ocultarError() {
+          const alertBox = document.getElementById('scan-alert-box');
+          if (alertBox) {
+              alertBox.style.display = 'none';
+          }
+      }
+
       async function iniciarCamara() {
           try {
               stream = await navigator.mediaDevices.getUserMedia({
@@ -170,8 +199,13 @@
                   audio: false
               });
               videoEl.srcObject = stream;
+              ocultarError();
           } catch (e) {
-              alert('No se pudo acceder a la cámara: ' + e.message);
+              let msg = 'No se pudo acceder a la cámara: ' + e.message;
+              if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+                  msg = 'No se pudo acceder a la cámara. Por favor asegurate de autorizar los permisos de cámara en tu navegador para continuar.';
+              }
+              mostrarError(msg);
           }
       }
       iniciarCamara();
@@ -211,11 +245,13 @@
       }
 
       function submitResultados() {
-          document.getElementById('fi-imagen-temp').value = aiImagenTemp || '';
-          document.getElementById('fi-humana').value      = aiScore  !== null ? aiScore  : '';
-          document.getElementById('fi-angulo').value      = aiAngulo !== null ? aiAngulo : '';
-          document.getElementById('fi-pinky-points').value = aiPinkyPoints ? JSON.stringify(aiPinkyPoints) : '';
-          document.getElementById('form-resultados').submit();
+          const params = new URLSearchParams({
+              imagen_temp: aiImagenTemp || '',
+              humana_score: aiScore !== null ? aiScore : '',
+              angulo_menique: aiAngulo !== null ? aiAngulo : '',
+              pinky_points: aiPinkyPoints ? JSON.stringify(aiPinkyPoints) : ''
+          });
+          window.location.href = '{{ route("resultado") }}?' + params.toString();
       }
 
       function resetCaptura() {
@@ -253,6 +289,7 @@
       }
 
       async function procesarCaptura(dataUrl) {
+          ocultarError();
           // Comprimir antes de enviar para evitar 413
           capturedDataUrl = await resizeDataUrl(dataUrl, 1024, 0.85);
 
@@ -268,6 +305,9 @@
                   headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
                   body: JSON.stringify({ imagen: capturedDataUrl }),
               });
+              if (!resp.ok) {
+                  throw new Error('Error en el servidor (' + resp.status + ')');
+              }
               const data = await resp.json();
               aiScore       = data.humana_score   ?? null;
               aiAngulo      = data.angulo_menique ?? null;
@@ -275,26 +315,34 @@
               aiPinkyPoints = data.pinky_points   ?? null;
               aiImagenTemp  = data.imagen_temp    ?? null;
           } catch (e) {
-              aiScore = aiAngulo = aiSoloMenique = aiImagenTemp = aiPinkyPoints = null;
+              clearInterval(progressInterval);
+              progressInterval = null;
+              setTimeout(() => {
+                  resetCaptura();
+                  mostrarError('Ocurrió un problema de conexión al analizar la foto. Por favor intentá de nuevo.');
+              }, 400);
+              return;
           }
 
           // Validar: solo el meñique extendido
           if (aiSoloMenique === false) {
-              clearInterval(progressInterval); progressInterval = null;
+              clearInterval(progressInterval);
+              progressInterval = null;
               setTimeout(() => {
-                  alert('La foto debe ser con un puño y solo el dedo meñique extendido. Por favor intentá de nuevo.');
                   resetCaptura();
-              }, 500);
+                  mostrarError('La foto debe ser con un puño cerrado y únicamente el dedo meñique extendido. Por favor intentá de nuevo.');
+              }, 400);
               return;
           }
 
           // Validar: mano real
           if (aiScore !== null && aiScore < 40) {
-              clearInterval(progressInterval); progressInterval = null;
+              clearInterval(progressInterval);
+              progressInterval = null;
               setTimeout(() => {
-                  alert('Necesitamos una foto más nítida de tu mano real. Por favor intentá de nuevo en buena iluminación.');
                   resetCaptura();
-              }, 500);
+                  mostrarError('Necesitamos una foto más nítida de tu mano real. Por favor intentá de nuevo con buena iluminación.');
+              }, 400);
               return;
           }
 

@@ -113,10 +113,13 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('guardar') }}">
-                @csrf
+            <form method="GET" action="{{ route('guardar') }}">
+                <input type="hidden" name="imagen_temp"    value="{{ $imagen_temp }}">
                 <input type="hidden" name="humana_score"   value="{{ $humana_score }}">
                 <input type="hidden" name="angulo_menique" value="{{ $angulo_menique }}">
+                @if(request('dev'))
+                <input type="hidden" name="dev" value="1">
+                @endif
 
                 <div class="form-field">
                     <label class="form-field-label" for="nombre">Nombre Completo *</label>

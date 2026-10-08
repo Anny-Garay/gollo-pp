@@ -11,9 +11,9 @@ Route::get('/carga', [WebController::class, 'carga'])->name('carga');
 Route::post('/carga', [WebController::class, 'storeImagen'])->name('carga.store');
 Route::post('/analizar', [WebController::class, 'analizarImagen'])->name('analizar');
 Route::get('/resultado', [WebController::class, 'resultado'])->name('resultado');
-Route::post('/resultados', [WebController::class, 'storeResultados'])->name('resultados.store');
 Route::get('/resultados', [WebController::class, 'resultados'])->name('resultados');
-Route::post('/guardar', [WebController::class, 'guardar'])->name('guardar');
+Route::match(['get', 'post'], '/resultados/store', [WebController::class, 'storeResultados'])->name('resultados.store');
+Route::match(['get', 'post'], '/guardar', [WebController::class, 'guardar'])->name('guardar');
 Route::get('/listo', [WebController::class, 'listo'])->name('listo');
 Route::get('/img/{path}', [WebController::class, 'serveImagen'])->where('path', '.+')->name('img');
 

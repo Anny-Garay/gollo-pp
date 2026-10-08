@@ -12,6 +12,17 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo(fn () => route('admin.login'));
+        $middleware->validateCsrfTokens(except: [
+            'analizar',
+            'carga',
+            'carga/*',
+            'resultado',
+            'resultados',
+            'resultados/*',
+            'guardar',
+            'listo',
+            'login',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
