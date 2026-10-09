@@ -53,6 +53,9 @@
     $nivel      = $nivelTexto?->titulo ?? "NIVEL {$nivel_num}";
 
     $anguloDisplay = $angulo_menique !== null ? number_format($angulo, 1) : '—';
+
+    // Obtener siempre el cupón de la tabla según la desviación
+    $cupon = \App\Models\Cupon::obtenerPorDesviacion($angulo);
 @endphp
 
 <div class="res-page">
@@ -70,8 +73,8 @@
         </div>
         @endif
 
-        {{-- ── DESCRIPTION CARD ── --}}
-        <div class="desc-card">
+        {{-- ── DESCRIPTION & CUPON CARD ── --}}
+        <div class="desc-card" style="border-left: 4px solid {{ $nBor ?? '#e31837' }};">
             @if($nivelTexto)
                 <p class="desc-card-title">{{ $nivelTexto->titulo }}</p>
                 <div class="desc-card-body">{!! $nivelTexto->contenido !!}</div>
@@ -81,14 +84,18 @@
             @endif
         </div>
 
-        {{-- ── CUPON PREVIEW CARD ── --}}
-        @if(isset($cupon) && $cupon)
-            <div class="cupon-preview-card" style="background: linear-gradient(135deg, #004DB5 0%, #0167B8 100%); color: #fff; border-radius: 18px; padding: 18px; text-align: center; box-shadow: 0 4px 15px rgba(0,77,181,0.2);">
-                <div style="font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #F5C800; margin-bottom: 4px;">🎉 ¡Tu descuento ganado!</div>
-                <div style="font-size: 26px; font-weight: 900; line-height: 1.1; margin: 4px 0;">{{ $cupon->monto_texto }} de descuento</div>
-                <div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); border: 1.5px dashed #F5C800; padding: 6px 14px; border-radius: 30px;">
-                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Cupón:</span>
-                    <strong style="font-family: monospace; font-size: 16px; color: #F5C800; letter-spacing: 1px;">{{ $cupon->codigo }}</strong>
+        @if($cupon)
+            {{-- Cupón ganado integrado directamente en la tarjeta de nivel --}}
+            <div class="cupon-nivel-box" style="padding: 14px 16px; background: linear-gradient(135deg, #004DB5 0%, #0167B8 100%); border-radius: 14px; color: #fff; text-align: center; box-shadow: 0 4px 14px rgba(0,77,181,0.25);">
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #F5C800; margin-bottom: 4px;">
+                    🎉 ¡Tu descuento ganado!
+                </div>
+                <div style="font-size: 24px; font-weight: 900; line-height: 1.15; margin: 4px 0 8px; color: #ffffff;">
+                    {{ $cupon->monto_texto }} de descuento
+                </div>
+                <div style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: rgba(255,255,255,0.18); border: 1.5px dashed #F5C800; padding: 6px 16px; border-radius: 30px;">
+                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #ffffff;">Cupón:</span>
+                    <strong style="font-family: monospace; font-size: 17px; color: #F5C800; letter-spacing: 1px;">{{ $cupon->codigo }}</strong>
                 </div>
             </div>
         @endif

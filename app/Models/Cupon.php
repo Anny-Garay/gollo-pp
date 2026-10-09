@@ -36,18 +36,23 @@ class Cupon extends Model
     public static function obtenerPorDesviacion(?float $angulo): ?self
     {
         if ($angulo === null) {
-            return null;
+            $angulo = 4.0;
         }
+
+        $angulo = (float)$angulo;
 
         // Si es mayor o igual a 15%
         if ($angulo >= 15.0) {
             return self::where('activo', true)
-                ->where('min_desviacion', '>=', 15.0)
+                ->where(function ($q) {
+                    $q->where('min_desviacion', '>=', 15.0)
+                      ->orWhere('codigo', 'Pinky24');
+                })
                 ->first()
-                ?? self::where('codigo', 'Pinky24')->first();
+                ?? self::where('activo', true)->orderBy('min_desviacion', 'desc')->first();
         }
 
-        return self::where('activo', true)
+        $cupon = self::where('activo', true)
             ->where('min_desviacion', '<=', $angulo)
             ->where(function ($query) use ($angulo) {
                 $query->whereNull('max_desviacion')
@@ -55,6 +60,13 @@ class Cupon extends Model
             })
             ->orderBy('min_desviacion', 'desc')
             ->first();
+
+        // Si el ángulo es menor al rango más bajo (ej. < 4%), asignar el cupón base más bajo
+        if (!$cupon) {
+            $cupon = self::where('activo', true)->orderBy('min_desviacion', 'asc')->first();
+        }
+
+        return $cupon;
     }
 
     /**
