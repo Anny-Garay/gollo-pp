@@ -68,32 +68,16 @@
 
       function checkScroll() {
         var scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-        var windowH = window.innerHeight || document.documentElement.clientHeight || 0;
-        var docH = Math.max(
-          document.body.scrollHeight, document.documentElement.scrollHeight,
-          document.body.offsetHeight, document.documentElement.offsetHeight,
-          document.body.clientHeight, document.documentElement.clientHeight
-        );
 
-        if (docH <= windowH + 20) {
-          btnUp.classList.add('scroll-btn-hidden');
-          btnDown.classList.add('scroll-btn-hidden');
-          return;
-        }
-
-        // Mostrar u ocultar arriba
+        // Mostrar flecha para subir solo cuando ya se ha scroleado hacia abajo
         if (scrollY > 30) {
           btnUp.classList.remove('scroll-btn-hidden');
         } else {
           btnUp.classList.add('scroll-btn-hidden');
         }
 
-        // Mostrar u ocultar abajo
-        if (scrollY + windowH >= docH - 40) {
-          btnDown.classList.add('scroll-btn-hidden');
-        } else {
-          btnDown.classList.remove('scroll-btn-hidden');
-        }
+        // La flecha para bajar NUNCA desaparece
+        btnDown.classList.remove('scroll-btn-hidden');
       }
 
       window.addEventListener('scroll', checkScroll, { passive: true });
