@@ -79,6 +79,10 @@
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 16c-.79 0-1.5.31-2.03.81l-7.55-4.42c.03-.13.05-.26.05-.39s-.02-.26-.05-.39l7.55-4.42c.53.5 1.24.81 2.03.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .13.02.26.05.39l-7.55 4.42C7.5 10.31 6.79 10 6 10c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.03-.81l7.55 4.42c-.03.13-.05.26-.05.39 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
       Compartir
     </button>
+    <a href="https://www.gollo.com" target="_blank" rel="noopener noreferrer" class="share-btn gollo-link" id="btn-ir-a-gollo" style="background: #e31837; text-decoration: none; color: #ffffff;">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+      IR A GOLLO.COM
+    </a>
   </div>
 
   <div class="share-status" id="share-status" style="text-align:center; font-size:13px; font-weight:700; color:#004DB5; margin-top:8px; min-height:20px;"></div>

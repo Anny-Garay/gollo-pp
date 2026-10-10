@@ -837,6 +837,8 @@ body {
 .share-btn.download   { background:var(--blue2); }
 .share-btn.copy       { background:#5b6b7c; }
 .share-btn.share-native { background:#7c3aed; }
+.share-btn.gollo-link { background:#e31837; color:#ffffff; text-decoration:none; }
+.share-btn.gollo-link:hover { color:#ffffff; }
 
 .share-status{
   font-size:12px;
