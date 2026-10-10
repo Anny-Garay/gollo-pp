@@ -31,6 +31,8 @@
         }
     </style>
     @stack('styles')
+    {{-- Analytics & Tracking --}}
+    @include('analytics')
 </head>
 <body>
     <header>

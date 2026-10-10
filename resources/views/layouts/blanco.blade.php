@@ -6,6 +6,9 @@
   <title>¡Listo! - Phone Pinky</title>
   <link rel="stylesheet" href="{{ asset('style.css') }}">
   <link href="{{ asset('/css/blanco.css?v=' . time()) }}" rel="stylesheet"/>
+
+  {{-- Analytics & Tracking --}}
+  @include('analytics')
 </head>
 <body class="listo-body">
   @yield('content')
