@@ -192,8 +192,8 @@ EOT;
             $response = Http::withToken($apiKey)
                 ->timeout(30)
                 ->post('https://api.openai.com/v1/chat/completions', [
-                    'model'      => 'gpt-4o',
-                    'max_tokens' => 500,
+                    'model'      => 'gpt-4.1-mini',
+                    'max_tokens' => 150,
                     'messages'   => [['role' => 'user', 'content' => $content]],
                 ]);
 
