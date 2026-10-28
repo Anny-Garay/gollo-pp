@@ -355,25 +355,8 @@ EOT;
         $cuponAgotado  = false;
 
         DB::transaction(function () use ($anguloMenique, &$cuponAsignado, &$cuponAgotado, $request, $imagenRuta, $humanaScore) {
-            $cupon = Cupon::obtenerPorDesviacion($anguloMenique);
-            
-            $cuponCodigo = null;
-            $cuponMonto  = null;
-            $cuponMontoTexto = null;
-
-            if ($cupon) {
-                // Bloqueo pesimista para evitar carreras de stock
-                $cuponLock = Cupon::where('id', $cupon->id)->lockForUpdate()->first();
-                if ($cuponLock && $cuponLock->stock_disponible > 0) {
-                    $cuponLock->decrement('stock_disponible');
-                    $cuponCodigo     = $cuponLock->codigo;
-                    $cuponMonto      = $cuponLock->monto_descuento;
-                    $cuponMontoTexto = $cuponLock->monto_texto;
-                    $cuponAsignado   = $cuponLock;
-                } else {
-                    $cuponAgotado = true;
-                }
-            }
+            $cuponAsignado = Cupon::asignarPorDesviacion($anguloMenique);
+            $cuponAgotado  = $cuponAsignado === null;
 
             Participante::create([
                 'nombre'            => $request->nombre,
@@ -383,9 +366,9 @@ EOT;
                 'foto'              => $imagenRuta,
                 'humana_score'      => $humanaScore,
                 'angulo_menique'    => $anguloMenique,
-                'cupon_codigo'      => $cuponCodigo,
-                'cupon_monto'       => $cuponMonto,
-                'cupon_monto_texto' => $cuponMontoTexto,
+                'cupon_codigo'      => $cuponAsignado?->codigo,
+                'cupon_monto'       => $cuponAsignado?->monto_descuento,
+                'cupon_monto_texto' => $cuponAsignado?->monto_texto,
             ]);
         });
 

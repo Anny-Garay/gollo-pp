@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Cupon extends Model
 {
@@ -67,6 +69,41 @@ class Cupon extends Model
         }
 
         return $cupon;
+    }
+
+    /**
+     * Asigna el cupón que corresponde a la desviación.
+     *
+     * El stock es un límite blando: si el cupón correspondiente ya no tiene
+     * unidades disponibles se entrega igual, para que ningún participante
+     * quede sin cupón. Se deja una advertencia en el log para reponerlo.
+     */
+    public static function asignarPorDesviacion(?float $angulo): ?self
+    {
+        return DB::transaction(function () use ($angulo) {
+            $ideal = self::obtenerPorDesviacion($angulo);
+
+            if (!$ideal) {
+                return null;
+            }
+
+            $cupon = self::whereKey($ideal->getKey())->lockForUpdate()->first();
+
+            if (!$cupon) {
+                return null;
+            }
+
+            if ($cupon->stock_disponible > 0) {
+                $cupon->decrement('stock_disponible');
+            } else {
+                Log::warning('Cupón asignado sin stock disponible', [
+                    'codigo' => $cupon->codigo,
+                    'angulo' => $angulo,
+                ]);
+            }
+
+            return $cupon;
+        });
     }
 
     /**
