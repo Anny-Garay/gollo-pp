@@ -130,8 +130,9 @@
             </div>
         </div>
 
-        {{-- ── Form oculto → GET /resultado ── --}}
-        <form id="form-resultados" method="GET" action="{{ route('resultado') }}">
+        {{-- ── Form oculto → POST /resultados/store ── --}}
+        <form id="form-resultados" method="POST" action="{{ route('resultados.store') }}">
+            @csrf
             <input type="hidden" id="fi-imagen-temp" name="imagen_temp">
             <input type="hidden" id="fi-humana"       name="humana_score">
             <input type="hidden" id="fi-angulo"       name="angulo_menique">
@@ -245,13 +246,11 @@
       }
 
       function submitResultados() {
-          const params = new URLSearchParams({
-              imagen_temp: aiImagenTemp || '',
-              humana_score: aiScore !== null ? aiScore : '',
-              angulo_menique: aiAngulo !== null ? aiAngulo : '',
-              pinky_points: aiPinkyPoints ? JSON.stringify(aiPinkyPoints) : ''
-          });
-          window.location.href = '{{ route("resultado") }}?' + params.toString();
+          document.getElementById('fi-imagen-temp').value = aiImagenTemp || '';
+          document.getElementById('fi-humana').value = aiScore !== null ? aiScore : '';
+          document.getElementById('fi-angulo').value = aiAngulo !== null ? aiAngulo : '';
+          document.getElementById('fi-pinky-points').value = aiPinkyPoints ? JSON.stringify(aiPinkyPoints) : '';
+          document.getElementById('form-resultados').submit();
       }
 
       function resetCaptura() {

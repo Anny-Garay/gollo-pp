@@ -79,14 +79,31 @@ class WebController extends Controller
         $imagenTemp = 'imagenes/temp/' . \Str::uuid() . '.jpg';
         \Storage::disk('public')->put($imagenTemp, $decoded);
 
-        [$humanaScore, $anguloMenique, $soloMenique, $pinkyPoints] = $this->analizarImagenConIA($request->imagen);
+        $resultadoIA = $this->analizarImagenConIA($request->imagen);
 
         return response()->json([
-            'humana_score'   => $humanaScore,
-            'angulo_menique' => max(2.0, $anguloMenique ?? 2.0), // Mínimo 2 para evitar que el front lo interprete como "no medido"
-            'solo_menique'   => $soloMenique,
-            'pinky_points'   => $pinkyPoints,
+            'humana_score'   => $resultadoIA['humana_score'],
+            'angulo_menique' => max(2.0, $resultadoIA['angulo_menique'] ?? 2.0), // Mínimo 2 para evitar que el front lo interprete como "no medido"
+            'solo_menique'   => $resultadoIA['solo_menique'],
+            'pinky_points'   => $resultadoIA['pinky_points'],
             'imagen_temp'    => $imagenTemp,
+        ]);
+    }
+
+    public function debugOpenAIForm()
+    {
+        return view('admin.openai-debug');
+    }
+
+    public function debugOpenAIAnalyze(Request $request)
+    {
+        $request->validate([
+            'imagen' => 'required|string',
+        ]);
+
+        return view('admin.openai-debug', [
+            'resultado' => $this->analizarImagenConIA($request->imagen),
+            'imagen'    => $request->imagen,
         ]);
     }
 
@@ -139,15 +156,36 @@ class WebController extends Controller
     }
 
     /**
-     * Llama a OpenAI Vision (gpt-4o) para analizar la imagen y devuelve
-     * [humana_score, angulo_menique, solo_menique, pinky_points].
-     * Retorna [null, null, null, null] si la llamada falla.
+     * Llama a OpenAI Vision para analizar la imagen.
+     *
+     * Devuelve humana_score, angulo_menique, solo_menique, pinky_points y
+     * debug (detalle crudo de la llamada para diagnóstico).
      */
     private function analizarImagenConIA(string $imageDataUrl): array
     {
+        $resultado = [
+            'humana_score'   => null,
+            'angulo_menique' => null,
+            'solo_menique'   => null,
+            'pinky_points'   => null,
+            'debug'          => [
+                'model'         => 'gpt-4.1-mini',
+                'max_tokens'    => 150,
+                'status'        => null,
+                'finish_reason' => null,
+                'content'       => null,
+                'parsed'        => null,
+                'angulo_crudo'  => null,
+                'error'         => null,
+                'usage'         => null,
+                'body'          => null,
+            ],
+        ];
+
         $apiKey = config('services.openai.key');
         if (!$apiKey) {
-            return [null, null, null, null];
+            $resultado['debug']['error'] = 'Falta configurar OPENAI_API_KEY.';
+            return $resultado;
         }
 
         $dedo_path = public_path('dedo-grafico.png');
@@ -197,33 +235,44 @@ EOT;
                     'messages'   => [['role' => 'user', 'content' => $content]],
                 ]);
 
+            $resultado['debug']['status']        = $response->status();
+            $resultado['debug']['finish_reason'] = $response->json('choices.0.finish_reason');
+            $resultado['debug']['body']          = $response->body();
+            $resultado['debug']['usage']         = $response->json('usage');
+
             if (!$response->successful()) {
+                $resultado['debug']['error'] = 'OpenAI respondió HTTP ' . $response->status();
                 \Log::warning('OpenAI API error', ['status' => $response->status(), 'body' => $response->body()]);
-                return [null, null, null, null];
+                return $resultado;
             }
 
-            $raw  = $response->json('choices.0.message.content', '');
-            $raw  = trim(preg_replace('/^```(?:json)?\s*|\s*```$/m', '', trim($raw)));
+            $raw = $response->json('choices.0.message.content', '');
+            $raw = trim(preg_replace('/^```(?:json)?\s*|\s*```$/m', '', trim($raw)));
+            $resultado['debug']['content'] = $raw;
+
             $data = json_decode($raw, true);
+            $resultado['debug']['parsed'] = $data;
 
             if (!is_array($data)) {
+                $resultado['debug']['error'] = 'La respuesta no es JSON válido: ' . json_last_error_msg();
                 \Log::warning('OpenAI respuesta no parseable', ['content' => $raw]);
-                return [null, null, null, null];
+                return $resultado;
             }
 
-            $humanaScore = isset($data['humana_score']) ? (int) $data['humana_score'] : null;
-            $soloMenique = isset($data['solo_menique']) ? (bool) $data['solo_menique'] : null;
-            $pinkyPoints = $data['pinky_points'] ?? null;
+            $resultado['humana_score'] = isset($data['humana_score']) ? (int) $data['humana_score'] : null;
+            $resultado['solo_menique'] = isset($data['solo_menique']) ? (bool) $data['solo_menique'] : null;
+            $resultado['pinky_points'] = $data['pinky_points'] ?? null;
 
-            $anguloMenique = null;
-            if (is_array($pinkyPoints) && count($pinkyPoints) >= 3) {
-                $anguloMenique = $this->calcularAnguloPinky($pinkyPoints);
+            if (is_array($resultado['pinky_points']) && count($resultado['pinky_points']) >= 3) {
+                $resultado['debug']['angulo_crudo'] = $this->calcularAnguloPinkyCrudo($resultado['pinky_points']);
+                $resultado['angulo_menique']         = $this->calcularAnguloPinky($resultado['pinky_points']);
             }
 
-            return [$humanaScore, $anguloMenique, $soloMenique, $pinkyPoints];
+            return $resultado;
         } catch (\Throwable $e) {
+            $resultado['debug']['error'] = $e->getMessage();
             \Log::error('OpenAI Vision exception', ['error' => $e->getMessage()]);
-            return [null, null, null, null];
+            return $resultado;
         }
     }
 
@@ -233,6 +282,15 @@ EOT;
      * Ángulo = desviación máxima entre el segmento base→PIP y base→tip, o PIP→DIP y base→tip.
      */
     private function calcularAnguloPinky(array $points): float
+    {
+        return max(2.0, min(20.0, $this->calcularAnguloPinkyCrudo($points)));
+    }
+
+    /**
+     * Mismo cálculo que calcularAnguloPinky() pero sin el ajuste de negocio 2°-20°.
+     * Se usa para diagnóstico.
+     */
+    private function calcularAnguloPinkyCrudo(array $points): float
     {
         $p0 = $points[0]; // base MCP
         $p3 = $points[count($points) - 1]; // tip
@@ -260,7 +318,7 @@ EOT;
             if ($angle > $maxAngle) $maxAngle = $angle;
         }
 
-        return max(2.0, min(20.0, round($maxAngle, 1)));
+        return round($maxAngle, 1);
     }
 
     public function resultado(Request $request)

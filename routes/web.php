@@ -12,8 +12,8 @@ Route::post('/carga', [WebController::class, 'storeImagen'])->name('carga.store'
 Route::post('/analizar', [WebController::class, 'analizarImagen'])->name('analizar');
 Route::get('/resultado', [WebController::class, 'resultado'])->name('resultado');
 Route::get('/resultados', [WebController::class, 'resultados'])->name('resultados');
-Route::match(['get', 'post'], '/resultados/store', [WebController::class, 'storeResultados'])->name('resultados.store');
-Route::match(['get', 'post'], '/guardar', [WebController::class, 'guardar'])->name('guardar');
+Route::post('/resultados/store', [WebController::class, 'storeResultados'])->name('resultados.store');
+Route::post('/guardar', [WebController::class, 'guardar'])->name('guardar');
 Route::get('/listo', [WebController::class, 'listo'])->name('listo');
 Route::get('/img/{path}', [WebController::class, 'serveImagen'])->where('path', '.+')->name('img');
 
@@ -33,6 +33,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('participantes/{participante}', [AdminController::class, 'destroyParticipante'])->name('participantes.destroy');
         Route::get('cupones', [AdminController::class, 'cupones'])->name('cupones');
         Route::put('cupones/{cupon}', [AdminController::class, 'cuponesUpdate'])->name('cupones.update');
+        Route::get('debug/openai', [WebController::class, 'debugOpenAIForm'])->name('debug.openai');
+        Route::post('debug/openai', [WebController::class, 'debugOpenAIAnalyze'])->name('debug.openai.analyze');
         Route::get('niveles', [AdminController::class, 'niveles'])->name('niveles');
         Route::put('niveles/{nivel}', [AdminController::class, 'nivelesUpdate'])->name('niveles.update');
         Route::get('productos', [AdminController::class, 'productos'])->name('productos');

@@ -120,7 +120,8 @@
                 </div>
             @endif
 
-            <form method="GET" action="{{ route('guardar') }}">
+            <form method="POST" action="{{ route('guardar') }}">
+                @csrf
                 <input type="hidden" name="imagen_temp"    value="{{ $imagen_temp }}">
                 <input type="hidden" name="humana_score"   value="{{ $humana_score }}">
                 <input type="hidden" name="angulo_menique" value="{{ $angulo_menique }}">
